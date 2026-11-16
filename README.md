@@ -6,7 +6,7 @@ A mock employee **dashboard** and **backoffice**: admins register employees, emp
 
 ## Stack
 
-- **Backend:** Java 17, Spring Boot 4.1, Spring Security, Data JPA, Flyway, PostgreSQL
+- **Backend:** Java 25 (LTS), Spring Boot 4.1, Spring Security, Data JPA, Flyway, PostgreSQL
 - **Frontend:** React 19, Vite, TypeScript, Tailwind CSS
 - **Tests:** JUnit 5, Testcontainers, Vitest, Testing Library (Playwright later)
 - **CI:** GitHub Actions
@@ -15,7 +15,7 @@ Why these choices: [docs/decisions](docs/decisions/).
 
 ## Run locally
 
-Requirements: JDK 17+, Node 26+, Docker.
+Requirements: JDK 25, Node 26, Docker. With SDKMAN: `cd backend && sdk env install`.
 
 ```bash
 # 1. Database (PostgreSQL :5432) and fake SMTP inbox (Mailpit UI :8025)
