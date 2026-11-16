@@ -18,15 +18,15 @@ Most checks are fast unit tests. Integration tests prove the layers work togethe
 
 | Level | Tools | What is covered |
 |---|---|---|
-| Unit | JUnit 5, Mockito, AssertJ | Auth service (success, wrong password, pending/inactive user, unknown email), token service (expiry, reuse, hashing), login history recording, rate limiter |
-| Integration | `@SpringBootTest`, MockMvc, **Testcontainers** (PostgreSQL), **GreenMail** (in-memory SMTP) | HTTP endpoints, security rules (employee gets 403 on `/api/admin/**`), Flyway migrations, the invite → activate → login → history flow, emails actually sent |
+| Unit (`*Test`) | JUnit 5, Mockito, AssertJ | Auth service (success, wrong password, pending/inactive user, unknown email, rate limit), refresh token rotation (expiry, reuse, grace window), rate limiter |
+| Integration (`*IT`) | `@SpringBootTest`, MockMvc, **Testcontainers** (PostgreSQL), **GreenMail** (in-memory SMTP) | HTTP endpoints, security rules (employee gets 403 on `/api/admin/**`), Flyway migrations, the invite → activate → login → history flow, emails actually sent |
 
 Testcontainers runs a real PostgreSQL in Docker, so queries and migrations are tested on the same database used in production instead of H2.
 
 ```bash
 cd backend
-./mvnw test      # unit tests
-./mvnw verify    # unit + integration tests (needs Docker)
+./mvnw test      # unit tests (*Test, Surefire)
+./mvnw verify    # unit + integration tests (*IT, Failsafe; needs Docker)
 ```
 
 ## Frontend

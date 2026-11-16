@@ -84,5 +84,5 @@ One-time tokens for invites (24 hours) and password resets (1 hour).
 ### `refresh_tokens`
 Refresh tokens issued at login (7 days).
 - Stored as SHA-256 hashes.
-- Rotated on every refresh: the old row gets `revoked_at`, a new row is inserted. If a revoked token is presented again (reuse), all of that user's refresh tokens are revoked.
+- Rotated on every refresh: the old row gets `revoked_at`, a new row is inserted. If a revoked token is presented again (reuse) more than 30 seconds after it was rotated, all of that user's refresh tokens are revoked. Within those 30 seconds the request is only rejected; this covers two browser tabs refreshing at the same moment.
 - Logout, deactivation and password change set `revoked_at` on the relevant rows.

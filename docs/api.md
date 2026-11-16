@@ -76,4 +76,4 @@ Every error uses the RFC 9457 Problem Details format:
 | 403 | Signed in but not allowed (for example an employee calling `/api/admin/**`) |
 | 404 | Resource not found |
 | 409 | Conflict, for example an email that is already registered |
-| 429 | Too many login attempts |
+| 429 | Too many failed logins: 5 failures per IP + email within 15 minutes. The response has a `Retry-After` header (seconds). |

@@ -48,7 +48,9 @@ sequenceDiagram
         API->>DB: revoke old token, insert new token
         API-->>FE: 200 { accessToken } + new cookie
         FE->>API: retry GET /api/me
-    else revoked token reused
+    else revoked token reused within 30 s (another tab won the race)
+        API-->>FE: 401, FE retries once with the new cookie
+    else revoked token reused later (possible theft)
         API->>DB: revoke ALL tokens of that user
         API-->>FE: 401
         FE->>FE: redirect to /login

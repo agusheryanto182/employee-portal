@@ -12,7 +12,7 @@ The frontend is a single-page app (and a PWA) talking to a separate REST API. Se
 ## Decision
 - **Access token:** JWT signed with HS256, valid for **15 minutes**, sent as `Authorization: Bearer`. Kept in memory on the client only.
 - **Refresh token:** random 256-bit value, valid for **7 days**, sent in an `httpOnly`, `Secure`, `SameSite=Lax` cookie with path `/api/auth`. Stored server-side as a SHA-256 hash.
-- **Rotation:** every refresh issues a new refresh token and revokes the old one. If a revoked token is used again, all of that user's sessions are revoked (reuse detection).
+- **Rotation:** every refresh issues a new refresh token and revokes the old one. If a revoked token is used again, all of that user's sessions are revoked (reuse detection). A 30-second grace window after rotation only rejects the request without revoking everything, so two tabs refreshing at once do not sign the user out.
 - **Passwords:** bcrypt.
 
 ## Alternatives considered
