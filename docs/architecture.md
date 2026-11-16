@@ -33,7 +33,7 @@ Locally the same shape runs with Docker Compose: PostgreSQL, Mailpit (a fake SMT
 
 | Layer | Choice | Why |
 |---|---|---|
-| Backend | Java 17, Spring Boot 4.1 (Web MVC, Security, Data JPA, Validation, Mail, Actuator) | Matches the company stack in the job description ([ADR 0001](decisions/0001-tech-stack.md)) |
+| Backend | Java 25 (LTS), Spring Boot 4.1 (Web MVC, Security, Data JPA, Validation, Mail, Actuator) | Matches the company stack in the job description ([ADR 0001](decisions/0001-tech-stack.md)) |
 | Build | Maven with the Maven Wrapper | Reproducible builds without a global install ([ADR 0009](decisions/0009-maven-wrapper.md)) |
 | Database | PostgreSQL, Flyway migrations | Relational data with clear relations; versioned schema changes |
 | Auth | JWT access token + rotating refresh token in an httpOnly cookie, bcrypt | Works for an SPA and a PWA without storing tokens in `localStorage` ([ADR 0003](decisions/0003-jwt-with-refresh-cookie.md)) |

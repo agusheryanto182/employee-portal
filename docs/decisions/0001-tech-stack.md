@@ -13,11 +13,11 @@ The brief leaves the tech stack free. The project is an assessment for a Full St
 The developer is comfortable with Java and Spring Boot from a bootcamp.
 
 ## Decision
-- **Backend:** Java 17 + Spring Boot 4.1 as a REST API (Spring Security, Data JPA, Flyway).
+- **Backend:** Java 25 + Spring Boot 4.1 as a REST API (Spring Security, Data JPA, Flyway).
 - **Frontend:** React + Vite + TypeScript as a single-page app.
 - **Database:** PostgreSQL.
 
-Java 17 is the minimum supported by Spring Boot 4 and is the JDK installed locally; it is an LTS release.
+Rule for versions: use the **latest LTS or latest stable** release of every tool. Java 25 is the current LTS (Java 27 is newer but non-LTS; the next LTS, 29, is planned for September 2027). Spring Boot 4.1 is the current stable line; upgrade to 4.2 once it is GA.
 
 ## Alternatives considered
 - **Next.js full stack (TypeScript only):** fastest to build and deploy, but does not show Java/Spring Boot, which is the company's backend stack.

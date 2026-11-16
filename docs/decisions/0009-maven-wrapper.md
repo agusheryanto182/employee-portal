@@ -4,7 +4,7 @@
 - **Date:** 2026-11-16
 
 ## Context
-The backend needs a build tool. The local machine has Java 17 but no global Maven. The build must give the same result on the developer's laptop, a reviewer's laptop, GitHub Actions and the Docker build on Render.
+The backend needs a build tool. The local machine has a JDK but no global Maven. The build must give the same result on the developer's laptop, a reviewer's laptop, GitHub Actions and the Docker build on Render.
 
 ## Decision
 Use **Maven** through the **Maven Wrapper** (`mvnw`, `mvnw.cmd`, `.mvn/wrapper/maven-wrapper.properties`), committed to the repository with a pinned Maven version.
