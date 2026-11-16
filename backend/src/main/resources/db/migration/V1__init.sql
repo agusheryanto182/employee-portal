@@ -30,7 +30,7 @@ CREATE TABLE login_history (
     CONSTRAINT ck_login_history_reason CHECK (
         (success AND failure_reason IS NULL)
         OR (NOT success AND failure_reason IN
-            ('INVALID_CREDENTIALS', 'ACCOUNT_PENDING', 'ACCOUNT_INACTIVE', 'RATE_LIMITED'))
+            ('INVALID_CREDENTIALS', 'ACCOUNT_PENDING', 'ACCOUNT_INACTIVE', 'WRONG_PORTAL', 'RATE_LIMITED'))
     )
 );
 CREATE INDEX idx_login_history_user_created ON login_history (user_id, created_at DESC);

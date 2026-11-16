@@ -64,7 +64,15 @@ class AuthIT {
     }
 
     private MvcResult login(String email, String password, String... forwardedFor) throws Exception {
-        var request = post("/api/auth/login")
+        return loginAt("/api/auth/login", email, password, forwardedFor);
+    }
+
+    private MvcResult adminLogin(String email, String password) throws Exception {
+        return loginAt("/api/admin/auth/login", email, password);
+    }
+
+    private MvcResult loginAt(String path, String email, String password, String... forwardedFor) throws Exception {
+        var request = post(path)
                 .contentType(MediaType.APPLICATION_JSON)
                 .header(HttpHeaders.USER_AGENT, "AuthIT/1.0")
                 .content("""
@@ -182,6 +190,44 @@ class AuthIT {
     }
 
     @Test
+    void adminSignsInOnTheBackofficeLoginPage() throws Exception {
+        User admin = createUser(Role.ADMIN, UserStatus.ACTIVE);
+
+        MvcResult result = adminLogin(admin.getEmail(), PASSWORD);
+
+        assertThat(result.getResponse().getStatus()).isEqualTo(200);
+        assertThat(jwtDecoder.decode(accessToken(result)).getClaimAsString("role")).isEqualTo("ADMIN");
+        assertThat(result.getResponse().getHeader(HttpHeaders.SET_COOKIE)).contains("Path=/api/auth");
+        assertThat(historyOf(admin.getEmail())).singleElement().satisfies(e -> assertThat(e.isSuccess()).isTrue());
+    }
+
+    @Test
+    void eachLoginPageRejectsTheOtherRoleWithTheGenericError() throws Exception {
+        User admin = createUser(Role.ADMIN, UserStatus.ACTIVE);
+        User employee = createUser(Role.EMPLOYEE, UserStatus.ACTIVE);
+
+        for (MvcResult result : List.of(login(admin.getEmail(), PASSWORD), adminLogin(employee.getEmail(), PASSWORD))) {
+            assertThat(result.getResponse().getStatus()).isEqualTo(401);
+            assertThat((String) JsonPath.read(result.getResponse().getContentAsString(), "$.detail"))
+                    .isEqualTo("Invalid email or password");
+            assertThat(result.getResponse().getHeader(HttpHeaders.SET_COOKIE)).isNull();
+        }
+        assertThat(historyOf(admin.getEmail())).singleElement()
+                .satisfies(e -> assertThat(e.getFailureReason()).isEqualTo(LoginFailureReason.WRONG_PORTAL));
+        assertThat(historyOf(employee.getEmail())).singleElement()
+                .satisfies(e -> assertThat(e.getFailureReason()).isEqualTo(LoginFailureReason.WRONG_PORTAL));
+    }
+
+    @Test
+    void adminRefreshAndLogoutUseTheSharedEndpoints() throws Exception {
+        String refresh = refreshCookieValue(adminLogin(createUser(Role.ADMIN, UserStatus.ACTIVE).getEmail(), PASSWORD));
+
+        mockMvc.perform(post("/api/auth/refresh").cookie(new Cookie("refresh_token", refresh)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.user.role").value("ADMIN"));
+    }
+
+    @Test
     void invalidLoginRequestReturnsFieldErrors() throws Exception {
         mockMvc.perform(post("/api/auth/login")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -239,7 +285,7 @@ class AuthIT {
     @Test
     void accessTokenAuthenticatesRequestsAndRolesAreEnforced() throws Exception {
         String employeeToken = accessToken(login(createUser(Role.EMPLOYEE, UserStatus.ACTIVE).getEmail(), PASSWORD));
-        String adminToken = accessToken(login(createUser(Role.ADMIN, UserStatus.ACTIVE).getEmail(), PASSWORD));
+        String adminToken = accessToken(adminLogin(createUser(Role.ADMIN, UserStatus.ACTIVE).getEmail(), PASSWORD));
 
         // Authenticated: passes security and reaches routing (no such endpoint yet, so 404, not 401).
         mockMvc.perform(get("/api/does-not-exist").header(HttpHeaders.AUTHORIZATION, "Bearer " + employeeToken))

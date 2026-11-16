@@ -73,7 +73,7 @@ class AuthServiceTest {
         when(accessTokenService.issue(user))
                 .thenReturn(new AccessTokenService.AccessToken("access", clock.instant().plusSeconds(900), 900));
 
-        AuthService.Session session = authService.login(new LoginRequest("  Budi@Example.COM ", "correct-password"), CLIENT);
+        AuthService.Session session = authService.login(new LoginRequest("  Budi@Example.COM ", "correct-password"), CLIENT, LoginPortal.EMPLOYEE);
 
         assertThat(session.accessToken()).isEqualTo("access");
         assertThat(session.refreshToken()).isEqualTo("refresh");
@@ -85,7 +85,7 @@ class AuthServiceTest {
     void wrongPasswordIsRejectedAndRecorded() {
         givenUserExists();
 
-        assertThatThrownBy(() -> authService.login(new LoginRequest("budi@example.com", "wrong"), CLIENT))
+        assertThatThrownBy(() -> authService.login(new LoginRequest("budi@example.com", "wrong"), CLIENT, LoginPortal.EMPLOYEE))
                 .isInstanceOf(InvalidCredentialsException.class);
         verify(loginHistoryService).recordFailure(user, "budi@example.com", LoginFailureReason.INVALID_CREDENTIALS, CLIENT);
         verify(refreshTokenService, never()).issue(any());
@@ -95,7 +95,7 @@ class AuthServiceTest {
     void unknownEmailGetsTheSameErrorAndIsRecordedWithoutUser() {
         when(userRepository.findByEmail(anyString())).thenReturn(Optional.empty());
 
-        assertThatThrownBy(() -> authService.login(new LoginRequest("ghost@example.com", "whatever"), CLIENT))
+        assertThatThrownBy(() -> authService.login(new LoginRequest("ghost@example.com", "whatever"), CLIENT, LoginPortal.EMPLOYEE))
                 .isInstanceOf(InvalidCredentialsException.class)
                 .hasMessage("Invalid email or password");
         verify(loginHistoryService).recordFailure(isNull(), eq("ghost@example.com"),
@@ -107,7 +107,7 @@ class AuthServiceTest {
         User pending = User.pending("budi@example.com", "Budi", null, Role.EMPLOYEE);
         when(userRepository.findByEmail("budi@example.com")).thenReturn(Optional.of(pending));
 
-        assertThatThrownBy(() -> authService.login(new LoginRequest("budi@example.com", "anything"), CLIENT))
+        assertThatThrownBy(() -> authService.login(new LoginRequest("budi@example.com", "anything"), CLIENT, LoginPortal.EMPLOYEE))
                 .isInstanceOf(InvalidCredentialsException.class);
         verify(loginHistoryService).recordFailure(pending, "budi@example.com", LoginFailureReason.ACCOUNT_PENDING, CLIENT);
     }
@@ -117,7 +117,7 @@ class AuthServiceTest {
         user.setStatus(UserStatus.INACTIVE);
         givenUserExists();
 
-        assertThatThrownBy(() -> authService.login(new LoginRequest("budi@example.com", "correct-password"), CLIENT))
+        assertThatThrownBy(() -> authService.login(new LoginRequest("budi@example.com", "correct-password"), CLIENT, LoginPortal.EMPLOYEE))
                 .isInstanceOf(InvalidCredentialsException.class);
         verify(loginHistoryService).recordFailure(user, "budi@example.com", LoginFailureReason.ACCOUNT_INACTIVE, CLIENT);
     }
@@ -126,13 +126,43 @@ class AuthServiceTest {
     void tooManyFailuresBlockEvenTheCorrectPassword() {
         givenUserExists();
         for (int i = 0; i < 5; i++) {
-            assertThatThrownBy(() -> authService.login(new LoginRequest("budi@example.com", "wrong"), CLIENT))
+            assertThatThrownBy(() -> authService.login(new LoginRequest("budi@example.com", "wrong"), CLIENT, LoginPortal.EMPLOYEE))
                     .isInstanceOf(InvalidCredentialsException.class);
         }
 
-        assertThatThrownBy(() -> authService.login(new LoginRequest("budi@example.com", "correct-password"), CLIENT))
+        assertThatThrownBy(() -> authService.login(new LoginRequest("budi@example.com", "correct-password"), CLIENT, LoginPortal.EMPLOYEE))
                 .isInstanceOf(TooManyLoginAttemptsException.class);
         verify(loginHistoryService).recordFailure(user, "budi@example.com", LoginFailureReason.RATE_LIMITED, CLIENT);
+    }
+
+    @Test
+    void employeeCannotSignInOnTheAdminLoginPage() {
+        givenUserExists();
+
+        assertThatThrownBy(() -> authService.login(new LoginRequest("budi@example.com", "correct-password"), CLIENT, LoginPortal.ADMIN))
+                .isInstanceOf(InvalidCredentialsException.class)
+                .hasMessage("Invalid email or password");
+        verify(loginHistoryService).recordFailure(user, "budi@example.com", LoginFailureReason.WRONG_PORTAL, CLIENT);
+        verify(refreshTokenService, never()).issue(any());
+    }
+
+    @Test
+    void adminCannotSignInOnTheEmployeeLoginPage() {
+        User admin = User.active("boss@example.com", "Boss", Role.ADMIN, ENCODER.encode("correct-password"));
+        when(userRepository.findByEmail("boss@example.com")).thenReturn(Optional.of(admin));
+
+        assertThatThrownBy(() -> authService.login(new LoginRequest("boss@example.com", "correct-password"), CLIENT, LoginPortal.EMPLOYEE))
+                .isInstanceOf(InvalidCredentialsException.class);
+        verify(loginHistoryService).recordFailure(admin, "boss@example.com", LoginFailureReason.WRONG_PORTAL, CLIENT);
+    }
+
+    @Test
+    void wrongPasswordOnTheWrongPortalIsRecordedAsInvalidCredentials() {
+        givenUserExists();
+
+        assertThatThrownBy(() -> authService.login(new LoginRequest("budi@example.com", "wrong"), CLIENT, LoginPortal.ADMIN))
+                .isInstanceOf(InvalidCredentialsException.class);
+        verify(loginHistoryService).recordFailure(user, "budi@example.com", LoginFailureReason.INVALID_CREDENTIALS, CLIENT);
     }
 
     @Test

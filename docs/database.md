@@ -72,7 +72,7 @@ stateDiagram-v2
 ### `login_history`
 One row per login attempt, successful or not ([ADR 0005](decisions/0005-login-history-includes-failures.md)).
 - `user_id` is `NULL` when the email does not belong to any account; `email_attempted` still records what was typed.
-- `failure_reason`: `INVALID_CREDENTIALS`, `ACCOUNT_PENDING`, `ACCOUNT_INACTIVE` or `RATE_LIMITED`. This is stored for the admin; the API response to the client is always generic.
+- `failure_reason`: `INVALID_CREDENTIALS`, `ACCOUNT_PENDING`, `ACCOUNT_INACTIVE`, `WRONG_PORTAL` (correct credentials on the other role's login page) or `RATE_LIMITED`. This is stored for the admin; the API response to the client is always generic.
 - Index on `(user_id, created_at DESC)` for "my history" pages, and on `created_at DESC` for the admin view.
 - Rows are append-only. They are never updated by the application.
 

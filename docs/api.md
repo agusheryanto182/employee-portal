@@ -4,7 +4,7 @@ Base path: `/api`. JSON in and out. Interactive documentation is served by Swagg
 
 ## Authentication
 
-- `POST /api/auth/login` returns an **access token** (JWT, 15 minutes) in the response body and sets a **refresh token** (7 days) in an httpOnly cookie scoped to `/api/auth`.
+- Employees sign in with `POST /api/auth/login`, admins with `POST /api/admin/auth/login`. Each endpoint only accepts its own role ([ADR 0012](decisions/0012-separate-admin-and-employee-areas.md)). Both return an **access token** (JWT, 15 minutes) in the response body and sets a **refresh token** (7 days) in an httpOnly cookie scoped to `/api/auth`.
 - Protected endpoints require `Authorization: Bearer <access token>`.
 - When the access token expires (HTTP 401), the client calls `POST /api/auth/refresh`, which uses the cookie and returns a new access token.
 - See [auth-flows.md](auth-flows.md) and [ADR 0003](decisions/0003-jwt-with-refresh-cookie.md).
@@ -15,8 +15,9 @@ Base path: `/api`. JSON in and out. Interactive documentation is served by Swagg
 
 | Method | Path | Description |
 |---|---|---|
-| POST | `/api/auth/login` | `{ email, password }` → `{ accessToken, user }` and sets the refresh cookie. Every attempt is written to login history. |
-| POST | `/api/auth/refresh` | Rotates the refresh cookie and returns `{ accessToken, user }` |
+| POST | `/api/auth/login` | Employee sign in. `{ email, password }` → `{ accessToken, tokenType, expiresIn, user }` and sets the refresh cookie. Every attempt is written to login history. |
+| POST | `/api/admin/auth/login` | Admin sign in. Same request and response. An account of the other role gets the same generic 401 (recorded as `WRONG_PORTAL`). |
+| POST | `/api/auth/refresh` | Rotates the refresh cookie and returns `{ accessToken, user }`. Shared by both roles. |
 | POST | `/api/auth/logout` | Revokes the refresh token and clears the cookie |
 | GET | `/api/auth/tokens/{token}` | Checks an invite or reset link before showing the form → `{ type, email, fullName }` |
 | POST | `/api/auth/activate` | `{ token, password }` sets the first password and activates the account |

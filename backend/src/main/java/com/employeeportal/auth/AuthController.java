@@ -9,7 +9,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.employeeportal.common.ClientInfo;
-import com.employeeportal.user.UserResponse;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -25,12 +24,13 @@ public class AuthController {
 
     private final AuthService authService;
     private final RefreshCookies refreshCookies;
+    private final SessionResponses sessionResponses;
 
-    @Operation(summary = "Sign in", description = "Returns an access token and sets the refresh token cookie. Every attempt is recorded in the login history.")
+    @Operation(summary = "Employee sign in", description = "Employee accounts only (admins use /api/admin/auth/login). Returns an access token and sets the refresh token cookie. Every attempt is recorded in the login history.")
     @PostMapping("/login")
     public ResponseEntity<AuthResponse> login(@Valid @RequestBody LoginRequest request, HttpServletRequest httpRequest) {
-        AuthService.Session session = authService.login(request, ClientInfo.from(httpRequest));
-        return withSession(session);
+        AuthService.Session session = authService.login(request, ClientInfo.from(httpRequest), LoginPortal.EMPLOYEE);
+        return sessionResponses.ok(session);
     }
 
     @Operation(summary = "Get a new access token", description = "Uses and rotates the refresh token cookie.")
@@ -41,7 +41,7 @@ public class AuthController {
             if (refreshToken == null || refreshToken.isBlank()) {
                 throw new InvalidRefreshTokenException();
             }
-            return withSession(authService.refresh(refreshToken));
+            return sessionResponses.ok(authService.refresh(refreshToken));
         } catch (InvalidRefreshTokenException ex) {
             // Also drop the unusable cookie so the browser stops sending it.
             return ResponseEntity.status(ex.getStatus())
@@ -57,16 +57,5 @@ public class AuthController {
         return ResponseEntity.noContent()
                 .header(HttpHeaders.SET_COOKIE, refreshCookies.clear().toString())
                 .build();
-    }
-
-    private ResponseEntity<AuthResponse> withSession(AuthService.Session session) {
-        AuthResponse body = new AuthResponse(
-                session.accessToken(),
-                "Bearer",
-                session.expiresInSeconds(),
-                UserResponse.from(session.user()));
-        return ResponseEntity.ok()
-                .header(HttpHeaders.SET_COOKIE, refreshCookies.create(session.refreshToken()).toString())
-                .body(body);
     }
 }

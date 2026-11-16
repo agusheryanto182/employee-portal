@@ -55,7 +55,10 @@ public class AuthService {
     public record Session(String accessToken, long expiresInSeconds, String refreshToken, User user) {
     }
 
-    public Session login(LoginRequest request, ClientInfo client) {
+    /**
+     * @param portal which login page was used; an account may only sign in on its own role's page
+     */
+    public Session login(LoginRequest request, ClientInfo client, LoginPortal portal) {
         String email = User.normalizeEmail(request.email());
         String limitKey = LoginRateLimiter.key(client.ipAddress(), email);
         User user = userRepository.findByEmail(email).orElse(null);
@@ -66,7 +69,7 @@ public class AuthService {
             throw new TooManyLoginAttemptsException(retryAfter);
         }
 
-        LoginFailureReason failure = checkCredentials(user, request.password());
+        LoginFailureReason failure = checkCredentials(user, request.password(), portal);
         if (failure != null) {
             rateLimiter.recordFailure(limitKey);
             loginHistoryService.recordFailure(user, email, failure, client);
@@ -91,7 +94,7 @@ public class AuthService {
     }
 
     /** @return null when the credentials are valid and the account may sign in */
-    private LoginFailureReason checkCredentials(User user, String password) {
+    private LoginFailureReason checkCredentials(User user, String password, LoginPortal portal) {
         if (user == null || user.getPasswordHash() == null) {
             passwordEncoder.matches(password, dummyPasswordHash);
             return user == null ? LoginFailureReason.INVALID_CREDENTIALS : LoginFailureReason.ACCOUNT_PENDING;
@@ -104,6 +107,9 @@ public class AuthService {
         }
         if (user.getStatus() == UserStatus.PENDING) {
             return LoginFailureReason.ACCOUNT_PENDING;
+        }
+        if (!portal.accepts(user)) {
+            return LoginFailureReason.WRONG_PORTAL;
         }
         return null;
     }

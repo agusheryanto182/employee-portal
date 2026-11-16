@@ -15,11 +15,11 @@ sequenceDiagram
     participant API as Spring Boot API
     participant DB as PostgreSQL
 
-    U->>FE: email + password
-    FE->>API: POST /api/auth/login
+    U->>FE: email + password on /login (employee) or /admin/login (admin)
+    FE->>API: POST /api/auth/login or /api/admin/auth/login
     API->>API: rate limit check (IP + email)
     API->>DB: find user by email (lowercase)
-    alt unknown email, wrong password, PENDING or INACTIVE
+    alt unknown email, wrong password, PENDING, INACTIVE or wrong login page for the role
         API->>DB: insert login_history (success = false, reason)
         API-->>FE: 401 "Invalid email or password"
     else valid
