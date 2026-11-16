@@ -29,5 +29,6 @@ It is written before the code and updated whenever a decision changes.
 | [0009](decisions/0009-maven-wrapper.md) | Maven with the Maven Wrapper | Accepted |
 | [0010](decisions/0010-oxlint.md) | oxlint for frontend linting | Accepted |
 | [0011](decisions/0011-vite-spa-tanstack-router.md) | Vite SPA with TanStack Router instead of Next.js | Accepted |
+| [0012](decisions/0012-separate-admin-and-employee-areas.md) | Admins and employees each have their own area | Accepted |
 
 New ADRs copy [decisions/template.md](decisions/template.md).
