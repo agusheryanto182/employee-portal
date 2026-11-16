@@ -1,5 +1,15 @@
-# Object file
-*.o
+# OS / editors
+.DS_Store
+Thumbs.db
+.idea/
+*.iml
+.vscode/*
+!.vscode/extensions.json
 
-# Ada Library Information
-*.ali
+# Environment and secrets
+.env
+.env.*
+!.env.example
+
+# Logs
+*.log
