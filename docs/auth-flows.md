@@ -30,7 +30,9 @@ sequenceDiagram
     end
 ```
 
-The response for a failed login is the same whatever the reason, so the endpoint cannot be used to discover which emails exist. The real reason is stored for the admin.
+The response for a failed login is the same whatever the reason, so the endpoint cannot be used to discover which emails exist, or which role an account has. The real reason is stored for the admin (see [database.md](database.md)).
+
+Each login endpoint only accepts its own role: `/api/auth/login` employees, `/api/admin/auth/login` admins ([ADR 0012](decisions/0012-separate-admin-and-employee-areas.md)). Refresh and logout are shared.
 
 ## Calling the API and refreshing
 
@@ -53,7 +55,7 @@ sequenceDiagram
     else revoked token reused later (possible theft)
         API->>DB: revoke ALL tokens of that user
         API-->>FE: 401
-        FE->>FE: redirect to /login
+        FE->>FE: redirect to /login (employee) or /admin/login (admin)
     end
 ```
 
@@ -70,7 +72,7 @@ sequenceDiagram
     FE->>API: POST /api/auth/logout (cookie)
     API->>DB: set revoked_at on the refresh token
     API-->>FE: 204 + expired cookie
-    FE->>FE: clear access token and cached data, go to /login
+    FE->>FE: clear access token and cached data, go to /login or /admin/login
 ```
 
 ## Invite and activation
@@ -84,7 +86,7 @@ sequenceDiagram
     participant DB as PostgreSQL
     participant M as SMTP (Mailpit / Brevo)
 
-    A->>FE: create employee (email, name, role)
+    A->>FE: create user in the backoffice (email, name, role)
     FE->>API: POST /api/admin/users
     API->>DB: insert user (PENDING, no password)
     API->>DB: insert account_tokens (INVITE, SHA-256 hash, expires in 24h)
@@ -98,7 +100,7 @@ sequenceDiagram
     FE->>API: POST /api/auth/activate { token, password }
     API->>DB: set password_hash (bcrypt), status ACTIVE, mark token used
     API-->>FE: 200
-    FE->>FE: go to /login
+    FE->>FE: go to /login (or /admin/login for an admin account)
 ```
 
 If the email does not arrive, the admin clicks **Resend invite**: a new token is issued, older ones are invalidated, and the link is shown so it can be copied.

@@ -44,4 +44,4 @@ Secrets are set in each provider's dashboard and are never committed.
 2. **Brevo**: create an account, verify the sender email and generate an SMTP key.
 3. **Render**: new Web Service from the GitHub repo, root `backend/`, Docker runtime, set the environment variables above, health check `/actuator/health`.
 4. **Vercel**: import the repo, root `frontend/`, add a rewrite from `/api/:path*` to the Render URL in `vercel.json`.
-5. Smoke test: sign in as the seeded admin, invite a real email address, activate, sign in, check the history.
+5. Smoke test: sign in as the seeded admin at `/admin/login`, invite a real email address, activate, sign in at `/login`, check the history.

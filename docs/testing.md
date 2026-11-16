@@ -19,7 +19,7 @@ Most checks are fast unit tests. Integration tests prove the layers work togethe
 | Level | Tools | What is covered |
 |---|---|---|
 | Unit (`*Test`) | JUnit 5, Mockito, AssertJ | Auth service (success, wrong password, pending/inactive user, unknown email, rate limit), refresh token rotation (expiry, reuse, grace window), rate limiter |
-| Integration (`*IT`) | `@SpringBootTest`, MockMvc, **Testcontainers** (PostgreSQL), **GreenMail** (in-memory SMTP) | HTTP endpoints, security rules (employee gets 403 on `/api/admin/**`), Flyway migrations, the invite → activate → login → history flow, emails actually sent |
+| Integration (`*IT`) | `@SpringBootTest`, MockMvc, **Testcontainers** (PostgreSQL), **GreenMail** (in-memory SMTP) | HTTP endpoints, security rules (employee gets 403 on `/api/admin/**`, each login endpoint rejects the other role), Flyway migrations, the invite → activate → login → history flow, emails actually sent |
 
 Testcontainers runs a real PostgreSQL in Docker, so queries and migrations are tested on the same database used in production instead of H2.
 
@@ -45,12 +45,12 @@ npm test
 Playwright runs against the full Docker Compose stack. The invite link is read from the **Mailpit API**, so the test follows the real email path.
 
 Main journey:
-1. Admin signs in and creates an employee
+1. Admin signs in at `/admin/login` and creates an employee
 2. The test reads the invite email from Mailpit and opens the link
-3. The employee sets a password and signs in
+3. The employee sets a password and signs in at `/login`; signing in at `/admin/login` fails
 4. A failed login and a successful login both appear in the history
 5. The employee edits the profile and logs out
-6. A protected page redirects to the login page after logout
+6. After logout, a protected page redirects to `/login`; an employee opening `/admin` is redirected to `/`
 
 ```bash
 docker compose up -d

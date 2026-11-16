@@ -53,7 +53,7 @@ erDiagram
 ## Tables
 
 ### `users`
-Every account, admin or employee.
+Every account, admin or employee. `role` decides the area: `ADMIN` uses only the backoffice, `EMPLOYEE` only the dashboard ([ADR 0012](decisions/0012-separate-admin-and-employee-areas.md)).
 - `email` is unique and normalised to lowercase so `Budi@x.com` and `budi@x.com` are the same account.
 - `password_hash` (bcrypt) is `NULL` while the user is `PENDING`, because employees set their own password through the invite link.
 - Users are never deleted, only set to `INACTIVE` ([ADR 0006](decisions/0006-no-hard-delete.md)).
