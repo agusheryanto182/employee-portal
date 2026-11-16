@@ -28,7 +28,8 @@ The stack follows the internship job description (React or Angular, Java/Spring 
 ## Scope
 
 ### In scope
-- Email + password sign in, short-lived access token with a rotating refresh token ([ADR 0003](decisions/0003-jwt-with-refresh-cookie.md))
+- Email + password sign in on two separate pages, `/login` for employees and `/admin/login` for admins, each accepting only its own role ([ADR 0012](decisions/0012-separate-admin-and-employee-areas.md))
+- Short-lived access token with a rotating refresh token ([ADR 0003](decisions/0003-jwt-with-refresh-cookie.md))
 - Login history for every attempt, successful or not ([ADR 0005](decisions/0005-login-history-includes-failures.md))
 - Backoffice: create, list/search, edit, deactivate/activate users, resend invite, trigger password reset
 - Onboarding by invite email: employees set their own password ([ADR 0004](decisions/0004-invite-link-onboarding.md))
@@ -76,4 +77,4 @@ An issue is done when:
 - Docs and ADRs are updated if behaviour or a decision changed
 - The change is merged through a pull request that closes the issue
 
-The project is done when the full flow works in production: an admin invites an employee, the employee receives the email, activates the account, signs in, sees the login history, edits the profile and logs out, on desktop and as an installed PWA on a phone.
+The project is done when the full flow works in production: an admin signs in to the backoffice and invites an employee, the employee receives the email, activates the account, signs in to the dashboard, sees the login history, edits the profile and logs out, on desktop and as an installed PWA on a phone.
