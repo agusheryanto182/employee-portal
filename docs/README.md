@@ -28,5 +28,6 @@ It is written before the code and updated whenever a decision changes.
 | [0008](decisions/0008-no-profile-photo.md) | No profile photo upload in the first version | Accepted |
 | [0009](decisions/0009-maven-wrapper.md) | Maven with the Maven Wrapper | Accepted |
 | [0010](decisions/0010-oxlint.md) | oxlint for frontend linting | Accepted |
+| [0011](decisions/0011-vite-spa-tanstack-router.md) | Vite SPA with TanStack Router instead of Next.js | Accepted |
 
 New ADRs copy [decisions/template.md](decisions/template.md).

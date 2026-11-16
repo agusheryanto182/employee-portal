@@ -39,7 +39,8 @@ Locally the same shape runs with Docker Compose: PostgreSQL, Mailpit (a fake SMT
 | Auth | JWT access token + rotating refresh token in an httpOnly cookie, bcrypt | Works for an SPA and a PWA without storing tokens in `localStorage` ([ADR 0003](decisions/0003-jwt-with-refresh-cookie.md)) |
 | Email | Spring Mail + Thymeleaf templates; Mailpit locally, Brevo SMTP in production | Invite and reset links ([ADR 0004](decisions/0004-invite-link-onboarding.md)) |
 | API docs | springdoc-openapi (Swagger UI) | Reviewers can try the API directly |
-| Frontend | React, Vite, TypeScript | React is listed in the job description; Vite is fast and simple |
+| Frontend | React, Vite, TypeScript (SPA) | React is listed in the job description; no SEO needs behind a login ([ADR 0011](decisions/0011-vite-spa-tanstack-router.md)) |
+| Routing | TanStack Router (file-based, type-safe) | Next.js-style folders and layouts, guards in `beforeLoad` ([ADR 0011](decisions/0011-vite-spa-tanstack-router.md)) |
 | UI | Tailwind CSS, shadcn/ui | Accessible components, quick to build, mobile-first |
 | Data fetching | TanStack Query, axios | Caching, loading and error states; one place for token refresh |
 | Forms | react-hook-form, zod | Typed validation shared by form and API calls |
@@ -66,7 +67,7 @@ employee-portal/
 │     ├─ features/          auth, dashboard, profile, history, admin
 │     ├─ components/        shared UI (shadcn/ui)
 │     ├─ lib/               api client, auth store, utilities
-│     └─ routes/            router and guards
+│     └─ routes/            file-based routes (TanStack Router) and guards
 ├─ e2e/                     Playwright end-to-end tests
 ├─ docs/                    this documentation
 ├─ docker-compose.yml       local PostgreSQL + Mailpit (+ apps)
