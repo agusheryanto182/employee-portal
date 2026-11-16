@@ -18,8 +18,10 @@ The goal is to show how far and how fast the work can go, so the process, the re
 
 | Area | Users | What it does |
 |---|---|---|
-| **Backoffice** (`/admin`) | Admin | Register employees, manage their accounts, view everyone's login history |
-| **Dashboard** (`/`) | Employee (and admin) | Sign in, view own login history, edit profile, log out |
+| **Backoffice** (`/admin`) | Admin only | Register employees, manage their accounts, view everyone's login history, manage own account (profile, password), log out |
+| **Dashboard** (`/`) | Employee only | View own login history, edit profile, log out |
+
+Both roles use the same sign-in page; after signing in, each role is sent to its own area and cannot open the other one. See [ADR 0012](decisions/0012-separate-admin-and-employee-areas.md).
 
 The stack follows the internship job description (React or Angular, Java/Spring Boot, REST API, database, Git/GitHub with pull requests, unit and integration testing, Agile) so the project shows the skills the role needs. See [ADR 0001](decisions/0001-tech-stack.md).
 

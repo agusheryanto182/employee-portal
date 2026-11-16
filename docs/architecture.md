@@ -79,7 +79,7 @@ The backend is organised **by feature** rather than by layer: everything about l
 ## Key design points
 
 - **Stateless API, stateful refresh.** Access tokens are verified without a database lookup. Refresh tokens are stored (hashed) so they can be revoked on logout, deactivation or password change.
-- **Roles.** `ADMIN` and `EMPLOYEE`. `/api/admin/**` requires `ADMIN`. An admin can also use the employee dashboard.
+- **Roles.** `ADMIN` and `EMPLOYEE`, each with its own area: admins only use the backoffice (`/admin`), employees only use the dashboard (`/`). `/api/admin/**` requires `ADMIN`; `/api/me/**` (own profile, password, history) serves both roles ([ADR 0012](decisions/0012-separate-admin-and-employee-areas.md)).
 - **User lifecycle.** `PENDING` (invited, no password yet) → `ACTIVE` → `INACTIVE` (can be reactivated). See [database.md](database.md).
 - **Emails never block requests.** Emails are sent asynchronously after the transaction commits. If sending fails, the admin can copy the link from the backoffice.
 - **Consistent errors.** Every error is an RFC 9457 `ProblemDetail` response. See [api.md](api.md).
