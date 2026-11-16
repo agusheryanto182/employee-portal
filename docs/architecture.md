@@ -43,6 +43,7 @@ Locally the same shape runs with Docker Compose: PostgreSQL, Mailpit (a fake SMT
 | UI | Tailwind CSS, shadcn/ui | Accessible components, quick to build, mobile-first |
 | Data fetching | TanStack Query, axios | Caching, loading and error states; one place for token refresh |
 | Forms | react-hook-form, zod | Typed validation shared by form and API calls |
+| Lint | oxlint | Fast, near zero-config linter ([ADR 0010](decisions/0010-oxlint.md)) |
 | PWA | vite-plugin-pwa | Manifest and service worker generation |
 | Tests | JUnit 5, Mockito, Testcontainers, GreenMail, Vitest, Testing Library, Playwright | See [testing.md](testing.md) |
 | CI | GitHub Actions | Runs on every pull request |

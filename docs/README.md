@@ -27,5 +27,6 @@ It is written before the code and updated whenever a decision changes.
 | [0007](decisions/0007-free-tier-deployment.md) | Free-tier deployment on Vercel, Render and Neon | Accepted |
 | [0008](decisions/0008-no-profile-photo.md) | No profile photo upload in the first version | Accepted |
 | [0009](decisions/0009-maven-wrapper.md) | Maven with the Maven Wrapper | Accepted |
+| [0010](decisions/0010-oxlint.md) | oxlint for frontend linting | Accepted |
 
 New ADRs copy [decisions/template.md](decisions/template.md).
