@@ -1,0 +1,79 @@
+# API
+
+Base path: `/api`. JSON in and out. Interactive documentation is served by Swagger UI at `/swagger-ui.html` when the backend runs.
+
+## Authentication
+
+- `POST /api/auth/login` returns an **access token** (JWT, 15 minutes) in the response body and sets a **refresh token** (7 days) in an httpOnly cookie scoped to `/api/auth`.
+- Protected endpoints require `Authorization: Bearer <access token>`.
+- When the access token expires (HTTP 401), the client calls `POST /api/auth/refresh`, which uses the cookie and returns a new access token.
+- See [auth-flows.md](auth-flows.md) and [ADR 0003](decisions/0003-jwt-with-refresh-cookie.md).
+
+## Endpoints
+
+### Auth (public)
+
+| Method | Path | Description |
+|---|---|---|
+| POST | `/api/auth/login` | `{ email, password }` → `{ accessToken, user }` and sets the refresh cookie. Every attempt is written to login history. |
+| POST | `/api/auth/refresh` | Rotates the refresh cookie and returns `{ accessToken, user }` |
+| POST | `/api/auth/logout` | Revokes the refresh token and clears the cookie |
+| GET | `/api/auth/tokens/{token}` | Checks an invite or reset link before showing the form → `{ type, email, fullName }` |
+| POST | `/api/auth/activate` | `{ token, password }` sets the first password and activates the account |
+| POST | `/api/auth/reset-password` | `{ token, password }` sets a new password and revokes all sessions |
+
+### Self-service (any signed-in user)
+
+| Method | Path | Description |
+|---|---|---|
+| GET | `/api/me` | Current user's profile |
+| PATCH | `/api/me` | `{ fullName, phone }`. The email cannot be changed here. |
+| PUT | `/api/me/password` | `{ currentPassword, newPassword }`. Revokes other sessions. |
+| GET | `/api/me/login-history?page=&size=` | Own login attempts, newest first |
+
+### Backoffice (`ADMIN` only)
+
+| Method | Path | Description |
+|---|---|---|
+| GET | `/api/admin/users?search=&status=&page=&size=` | List and search users |
+| POST | `/api/admin/users` | `{ email, fullName, phone, role }` creates a `PENDING` user and sends an invite |
+| GET | `/api/admin/users/{id}` | User detail |
+| PATCH | `/api/admin/users/{id}` | Edit `email`, `fullName`, `phone`, `role` |
+| POST | `/api/admin/users/{id}/deactivate` | Sets `INACTIVE` and revokes all sessions |
+| POST | `/api/admin/users/{id}/activate` | Reactivates an `INACTIVE` user |
+| POST | `/api/admin/users/{id}/resend-invite` | New invite for a `PENDING` user → `{ link }` |
+| POST | `/api/admin/users/{id}/reset-password` | Sends a reset email → `{ link }` |
+| GET | `/api/admin/login-history?userId=&success=&from=&to=&page=&size=` | All login attempts with filters |
+
+The `{ link }` returned by the resend and reset endpoints lets the admin copy the link and share it another way if the email does not arrive ([ADR 0004](decisions/0004-invite-link-onboarding.md)).
+
+## Pagination
+
+List endpoints accept `page` (0-based) and `size` (default 20, max 100) and return:
+
+```json
+{ "content": [], "page": 0, "size": 20, "totalElements": 0, "totalPages": 0 }
+```
+
+## Errors
+
+Every error uses the RFC 9457 Problem Details format:
+
+```json
+{
+  "type": "about:blank",
+  "title": "Bad Request",
+  "status": 400,
+  "detail": "Validation failed",
+  "errors": { "email": "must be a well-formed email address" }
+}
+```
+
+| Status | When |
+|---|---|
+| 400 | Validation failed, or an invite or reset link is invalid, expired or used |
+| 401 | Not signed in, token expired, or wrong credentials (the message is always "Invalid email or password") |
+| 403 | Signed in but not allowed (for example an employee calling `/api/admin/**`) |
+| 404 | Resource not found |
+| 409 | Conflict, for example an email that is already registered |
+| 429 | Too many login attempts |
