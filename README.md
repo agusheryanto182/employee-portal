@@ -15,7 +15,7 @@ Why these choices: [docs/decisions](docs/decisions/).
 
 ## Run locally
 
-Requirements: JDK 17+, Node 22+, Docker.
+Requirements: JDK 17+, Node 26+, Docker.
 
 ```bash
 # 1. Database (PostgreSQL :5432) and fake SMTP inbox (Mailpit UI :8025)
