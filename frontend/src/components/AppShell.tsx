@@ -52,7 +52,7 @@ export function AppShell({ user, portal, nav, profilePath, subtitle, children }:
   }
 
   return (
-    <div className="min-h-svh bg-muted/40 pb-20 sm:pb-0">
+    <div className="min-h-svh bg-muted/40 pb-[calc(5rem+env(safe-area-inset-bottom))] sm:pb-0">
       <header className="sticky top-0 z-10 border-b bg-background/95 backdrop-blur">
         <div className="mx-auto flex h-14 max-w-5xl items-center gap-6 px-4">
           <Link to={nav[0]!.to} aria-label="Home">
@@ -101,7 +101,7 @@ export function AppShell({ user, portal, nav, profilePath, subtitle, children }:
 
       <main className="mx-auto max-w-5xl px-4 py-6">{children}</main>
 
-      <nav aria-label="Main" className="fixed inset-x-0 bottom-0 z-10 border-t bg-background sm:hidden">
+      <nav aria-label="Main" className="fixed inset-x-0 bottom-0 z-10 border-t bg-background pb-[env(safe-area-inset-bottom)] sm:hidden">
         <ul className="grid" style={{ gridTemplateColumns: `repeat(${nav.length}, minmax(0, 1fr))` }}>
           {nav.map((item) => (
             <li key={item.to}>

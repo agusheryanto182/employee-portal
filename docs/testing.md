@@ -33,7 +33,7 @@ cd backend
 
 | Level | Tools | What is covered |
 |---|---|---|
-| Unit / component | Vitest, Testing Library, **MSW** (fake API at the network level) | API client: token in memory, a single refresh shared by concurrent 401s, no refresh for failed sign-ins, session expiry; route guards (redirect to the area's sign-in page, keep each role in its own area, no open redirects); sign-in form (validation, generic 401, 429 with wait time); activate/reset form (bad or wrong-type links, password confirmation); change password (field error, new session kept); login history list; backoffice: user list filters sent to the API and reset to page 1, create user (taken email shown at the field), edit sends only changed fields, own role locked, actions per status with confirmation before deactivating, copyable invite link, login history filters with local-day date ranges |
+| Unit / component | Vitest, Testing Library, **MSW** (fake API at the network level) | API client: token in memory, a single refresh shared by concurrent 401s, no refresh for failed sign-ins, session expiry; route guards (redirect to the area's sign-in page, keep each role in its own area, no open redirects); sign-in form (validation, generic 401, 429 with wait time); activate/reset form (bad or wrong-type links, password confirmation); change password (field error, new session kept); login history list; backoffice: user list filters sent to the API and reset to page 1, create user (taken email shown at the field), edit sends only changed fields, own role locked, actions per status with confirmation before deactivating, copyable invite link, login history filters with local-day date ranges; session restore (one refresh when signed out, an expired session never comes back from the cache, retry after being offline); offline guard and banner |
 
 MSW runs with `onUnhandledFrame: 'error'`, so a component calling an endpoint the test did not expect fails the test. Components that render links use `renderWithRouter` (`src/test/utils.tsx`), which mounts them in an in-memory router.
 
@@ -41,6 +41,8 @@ MSW runs with `onUnhandledFrame: 'error'`, so a component calling an endpoint th
 cd frontend
 npm test
 ```
+
+The service worker itself is checked by hand on a production build (`npm run build && npm run preview`): Chrome's installability report, a reload while offline, and no `/api` entries in Cache Storage.
 
 ## End to end
 

@@ -1,9 +1,10 @@
 import { isRedirect } from '@tanstack/react-router'
 import { http, HttpResponse } from 'msw'
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
 import { server } from '@/test/server'
 import { aUser, anAuthResponse, problem } from '@/test/utils'
 import { redirectIfSignedIn, requireArea } from './guards'
+import { OfflineError } from './online'
 import { session } from './session'
 
 async function redirectOf(promise: Promise<unknown>) {
@@ -37,5 +38,12 @@ describe('route guards', () => {
   it('sends a signed-in user away from the sign-in pages', async () => {
     session.set(anAuthResponse('t', aUser({ role: 'EMPLOYEE' })))
     expect((await redirectOf(redirectIfSignedIn())).to).toBe('/')
+  })
+
+  it('shows the offline screen instead of the sign-in page when the session cannot be checked', async () => {
+    vi.spyOn(navigator, 'onLine', 'get').mockReturnValue(false)
+    server.use(http.post('/api/auth/refresh', () => HttpResponse.error()))
+
+    await expect(requireArea('employee', '/history')).rejects.toBeInstanceOf(OfflineError)
   })
 })
