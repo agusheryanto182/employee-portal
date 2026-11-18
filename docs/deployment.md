@@ -30,6 +30,7 @@ Emails sent locally appear in the Mailpit inbox at http://localhost:8025.
 | `ADMIN_EMAIL` / `ADMIN_PASSWORD` / `ADMIN_NAME` | | First admin, created only if it does not exist |
 | `MAIL_HOST` / `MAIL_PORT` | `smtp-relay.brevo.com` / `587` | SMTP server |
 | `MAIL_USERNAME` / `MAIL_PASSWORD` | | SMTP credentials |
+| `MAIL_SMTP_AUTH` / `MAIL_STARTTLS` | `true` / `true` | Required by Brevo; leave unset (false) for Mailpit |
 | `MAIL_FROM` | verified sender address | Email "From" |
 | `COOKIE_SECURE` | `true` | `Secure` flag on the refresh cookie (false only for local HTTP) |
 | `JAVA_TOOL_OPTIONS` | `-XX:MaxRAMPercentage=75` | Keeps the JVM within Render's 512 MB |

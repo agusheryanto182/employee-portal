@@ -99,12 +99,14 @@ sequenceDiagram
     E->>FE: choose password
     FE->>API: POST /api/auth/activate { token, password }
     API->>DB: set password_hash (bcrypt), status ACTIVE, mark token used
-    API-->>FE: 200
+    API-->>FE: 204
     FE->>FE: go to /login (or /admin/login for an admin account)
 ```
 
-If the email does not arrive, the admin clicks **Resend invite**: a new token is issued, older ones are invalidated, and the link is shown so it can be copied.
+If the email does not arrive, the admin clicks **Resend invite**: a new token is issued, older ones are invalidated, and the link is shown so it can be copied. If the admin corrects the email of a user who has not activated yet, the invite is sent again to the new address and the old link stops working. Deactivating the user cancels the link.
+
+The email is sent by an `@Async` `@TransactionalEventListener(AFTER_COMMIT)`: it is never sent for a change that was rolled back, and a slow or failing SMTP server does not delay or fail the admin's request.
 
 ## Password reset (admin-triggered)
 
-Same flow as the invite, with type `RESET`, a 1-hour expiry, and `POST /api/auth/reset-password`. A successful reset revokes every refresh token of the user, signing out all devices.
+Same flow as the invite, with type `RESET`, a 1-hour expiry, and `POST /api/auth/reset-password`. Only `ACTIVE` users can get a reset link. The current password keeps working until the link is used; a successful reset revokes every refresh token of the user, signing out all devices.

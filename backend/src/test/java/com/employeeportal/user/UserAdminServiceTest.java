@@ -16,6 +16,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import com.employeeportal.auth.AccountTokenService;
 import com.employeeportal.auth.RefreshTokenService;
 
 @ExtendWith(MockitoExtension.class)
@@ -25,6 +26,8 @@ class UserAdminServiceTest {
     UserRepository userRepository;
     @Mock
     RefreshTokenService refreshTokenService;
+    @Mock
+    AccountTokenService accountTokenService;
 
     UserAdminService service;
     final UUID adminId = UUID.randomUUID();
@@ -33,7 +36,7 @@ class UserAdminServiceTest {
 
     @BeforeEach
     void setUp() {
-        service = new UserAdminService(userRepository, refreshTokenService);
+        service = new UserAdminService(userRepository, refreshTokenService, accountTokenService);
         user = User.active("budi@example.com", "Budi", Role.EMPLOYEE, "hash");
         user.setId(userId);
     }
