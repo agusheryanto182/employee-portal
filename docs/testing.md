@@ -33,7 +33,9 @@ cd backend
 
 | Level | Tools | What is covered |
 |---|---|---|
-| Unit / component | Vitest, Testing Library, MSW | Form validation, error states, route guards, token refresh in the API client |
+| Unit / component | Vitest, Testing Library, **MSW** (fake API at the network level) | API client: token in memory, a single refresh shared by concurrent 401s, no refresh for failed sign-ins, session expiry; route guards (redirect to the area's sign-in page, keep each role in its own area, no open redirects); sign-in form (validation, generic 401, 429 with wait time); activate/reset form (bad or wrong-type links, password confirmation); change password (field error, new session kept); login history list |
+
+MSW runs with `onUnhandledFrame: 'error'`, so a component calling an endpoint the test did not expect fails the test.
 
 ```bash
 cd frontend
