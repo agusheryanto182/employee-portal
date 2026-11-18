@@ -12,7 +12,7 @@ Installable as a PWA.
 ## Stack
 
 - **Backend:** Java 25 (LTS), Spring Boot 4.1, Spring Security, Data JPA, Flyway, PostgreSQL
-- **Frontend:** React 19, Vite, TypeScript, Tailwind CSS
+- **Frontend:** React 19, Vite, TypeScript, TanStack Router and Query, Tailwind CSS, shadcn/ui, react-hook-form + zod
 - **Tests:** JUnit 5, Testcontainers, Vitest, Testing Library (Playwright later)
 - **CI:** GitHub Actions
 

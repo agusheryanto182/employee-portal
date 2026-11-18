@@ -1,5 +1,13 @@
 import '@testing-library/jest-dom/vitest'
 import { cleanup } from '@testing-library/react'
-import { afterEach } from 'vitest'
+import { afterAll, afterEach, beforeAll } from 'vitest'
+import { session } from '@/lib/session'
+import { server } from './server'
 
-afterEach(() => cleanup())
+beforeAll(() => server.listen({ onUnhandledFrame: 'error' }))
+afterEach(() => {
+  cleanup()
+  server.resetHandlers()
+  session.clear()
+})
+afterAll(() => server.close())
