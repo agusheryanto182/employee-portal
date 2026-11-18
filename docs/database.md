@@ -82,7 +82,8 @@ One row per login attempt, successful or not ([ADR 0005](decisions/0005-login-hi
 ### `account_tokens`
 One-time tokens for invites (24 hours) and password resets (1 hour).
 - Only the **SHA-256 hash** of the token is stored. The plain token exists only in the email link, so a database leak does not expose usable links.
-- `used_at` marks the token as consumed. Issuing a new token of the same type invalidates older unused ones.
+- `used_at` marks the token as consumed. It is also set on every other unused link of the user when a new link is sent, when a link is used, when the user is deactivated, and when an admin changes their email, so only the latest link ever works.
+- A link also requires the account to still have the matching status: an invite only works while the user is `PENDING`, a reset only while they are `ACTIVE`.
 
 ### `refresh_tokens`
 Refresh tokens issued at login (7 days).

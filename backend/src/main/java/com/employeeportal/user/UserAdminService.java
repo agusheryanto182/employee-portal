@@ -3,10 +3,14 @@ package com.employeeportal.user;
 import java.util.UUID;
 
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.employeeportal.auth.AccountTokenService;
+import com.employeeportal.auth.LinkResponse;
 import com.employeeportal.auth.RefreshTokenService;
+import com.employeeportal.common.ApiException;
 import com.employeeportal.common.PageResponse;
 
 import lombok.RequiredArgsConstructor;
@@ -18,6 +22,7 @@ public class UserAdminService {
 
     private final UserRepository userRepository;
     private final RefreshTokenService refreshTokenService;
+    private final AccountTokenService accountTokenService;
 
     @Transactional(readOnly = true)
     public PageResponse<UserResponse> list(String search, UserStatus status, Role role, Pageable pageable) {
@@ -31,31 +36,38 @@ public class UserAdminService {
         return UserResponse.from(find(id));
     }
 
-    /** Creates a {@code PENDING} user. The invite email is added in issue #7. */
+    /** Creates a {@code PENDING} user and emails them an invite link once the transaction commits. */
     @Transactional
     public UserResponse create(CreateUserRequest request) {
         String email = User.normalizeEmail(request.email());
         if (userRepository.existsByEmail(email)) {
             throw new EmailAlreadyUsedException();
         }
-        User user = User.pending(email, request.fullName().trim(), blankToNull(request.phone()), request.role());
-        return UserResponse.from(userRepository.saveAndFlush(user));
+        User user = userRepository.saveAndFlush(
+                User.pending(email, request.fullName().trim(), blankToNull(request.phone()), request.role()));
+        accountTokenService.sendInvite(user);
+        return UserResponse.from(user);
     }
 
     /**
      * Applies the non-null fields. A role change signs the user out everywhere, because their
-     * sessions were issued for the old role.
+     * sessions were issued for the old role. An email change cancels links sent to the old address;
+     * a user who has not activated yet gets a new invite at the new address.
      */
     @Transactional
     public UserResponse update(UUID id, UpdateUserRequest request, UUID actingAdminId) {
         User user = find(id);
+        boolean emailChanged = false;
 
         if (request.email() != null) {
             String email = User.normalizeEmail(request.email());
-            if (!email.equals(user.getEmail()) && userRepository.existsByEmail(email)) {
-                throw new EmailAlreadyUsedException();
+            if (!email.equals(user.getEmail())) {
+                if (userRepository.existsByEmail(email)) {
+                    throw new EmailAlreadyUsedException();
+                }
+                user.setEmail(email);
+                emailChanged = true;
             }
-            user.setEmail(email);
         }
         if (request.fullName() != null) {
             user.setFullName(request.fullName().trim());
@@ -70,7 +82,15 @@ public class UserAdminService {
             user.setRole(request.role());
             refreshTokenService.revokeAll(user.getId());
         }
-        return UserResponse.from(userRepository.saveAndFlush(user));
+        userRepository.saveAndFlush(user);
+        if (emailChanged) {
+            if (user.getStatus() == UserStatus.PENDING) {
+                accountTokenService.sendInvite(user);
+            } else {
+                accountTokenService.invalidateAll(user);
+            }
+        }
+        return UserResponse.from(user);
     }
 
     /** Blocks sign-in and revokes every session. Deactivating an inactive user changes nothing. */
@@ -83,6 +103,7 @@ public class UserAdminService {
         if (user.getStatus() != UserStatus.INACTIVE) {
             user.deactivate();
             refreshTokenService.revokeAll(user.getId());
+            accountTokenService.invalidateAll(user);
         }
         return UserResponse.from(userRepository.saveAndFlush(user));
     }
@@ -95,6 +116,26 @@ public class UserAdminService {
             user.reactivate();
         }
         return UserResponse.from(userRepository.saveAndFlush(user));
+    }
+
+    /** Sends a fresh invite to a user who has not activated yet; older invite links stop working. */
+    @Transactional
+    public LinkResponse resendInvite(UUID id) {
+        User user = find(id);
+        if (user.getStatus() != UserStatus.PENDING) {
+            throw new ApiException(HttpStatus.CONFLICT, "Only users who have not activated their account can be invited");
+        }
+        return new LinkResponse(accountTokenService.sendInvite(user));
+    }
+
+    /** Emails a password reset link to an active user. Their password stays valid until the link is used. */
+    @Transactional
+    public LinkResponse sendPasswordReset(UUID id) {
+        User user = find(id);
+        if (user.getStatus() != UserStatus.ACTIVE) {
+            throw new ApiException(HttpStatus.CONFLICT, "Only active users can reset their password");
+        }
+        return new LinkResponse(accountTokenService.sendPasswordReset(user));
     }
 
     private User find(UUID id) {

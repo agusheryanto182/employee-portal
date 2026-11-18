@@ -19,6 +19,8 @@ public record AppProperties(
         @Valid @NotNull Jwt jwt,
         @Valid @NotNull RefreshToken refreshToken,
         @Valid @NotNull LoginRateLimit loginRateLimit,
+        @Valid @NotNull AccountToken accountToken,
+        @Valid @NotNull Mail mail,
         @Valid @NotNull Admin admin) {
 
     /**
@@ -42,6 +44,14 @@ public record AppProperties(
     }
 
     public record LoginRateLimit(@Min(1) int maxFailures, @NotNull Duration window) {
+    }
+
+    /** Lifetime of one-time links sent by email (docs/decisions/0004-invite-link-onboarding.md). */
+    public record AccountToken(@NotNull Duration inviteTtl, @NotNull Duration resetTtl) {
+    }
+
+    /** @param from sender of every email, for example {@code Employee Portal <no-reply@example.com>} */
+    public record Mail(@NotBlank String from) {
     }
 
     /** First admin, created on startup when the email is set and no such account exists. */
