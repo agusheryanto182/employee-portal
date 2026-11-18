@@ -13,14 +13,14 @@ import org.springframework.test.context.ActiveProfiles;
 import com.employeeportal.TestcontainersConfiguration;
 
 /**
- * Full application context against a real PostgreSQL (Testcontainers) with MockMvc.
- * All integration tests share one cached context and one database container.
+ * Full application context against a real PostgreSQL (Testcontainers) and an in-memory SMTP server
+ * (GreenMail), with MockMvc. All integration tests share one cached context, database and mailbox.
  */
 @Target(ElementType.TYPE)
 @Retention(RetentionPolicy.RUNTIME)
 @SpringBootTest
 @AutoConfigureMockMvc
 @ActiveProfiles("test")
-@Import({TestcontainersConfiguration.class, TestAccounts.class})
+@Import({TestcontainersConfiguration.class, TestMailbox.class, TestAccounts.class})
 public @interface IntegrationTest {
 }

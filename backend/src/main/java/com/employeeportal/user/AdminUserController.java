@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.employeeportal.auth.LinkResponse;
 import com.employeeportal.common.CurrentUser;
 import com.employeeportal.common.PageResponse;
 import com.employeeportal.common.Pagination;
@@ -48,7 +49,7 @@ public class AdminUserController {
     }
 
     @PostMapping
-    @Operation(summary = "Register a user as PENDING")
+    @Operation(summary = "Register a user as PENDING and email them an invite link")
     public ResponseEntity<UserResponse> create(@Valid @RequestBody CreateUserRequest request) {
         UserResponse user = userAdminService.create(request);
         return ResponseEntity.created(URI.create("/api/admin/users/" + user.id())).body(user);
@@ -77,5 +78,17 @@ public class AdminUserController {
     @Operation(summary = "Reactivate an INACTIVE user (back to PENDING if they never set a password)")
     public UserResponse activate(@PathVariable UUID id) {
         return userAdminService.activate(id);
+    }
+
+    @PostMapping("/{id}/resend-invite")
+    @Operation(summary = "Email a new invite to a PENDING user and return the link (older links stop working)")
+    public LinkResponse resendInvite(@PathVariable UUID id) {
+        return userAdminService.resendInvite(id);
+    }
+
+    @PostMapping("/{id}/reset-password")
+    @Operation(summary = "Email a password reset link to an ACTIVE user and return the link")
+    public LinkResponse resetPassword(@PathVariable UUID id) {
+        return userAdminService.sendPasswordReset(id);
     }
 }
