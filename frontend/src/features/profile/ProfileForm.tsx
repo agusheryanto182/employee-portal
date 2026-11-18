@@ -11,15 +11,9 @@ import { Input } from '@/components/ui/input'
 import { api, toProblem } from '@/lib/api'
 import { session } from '@/lib/session'
 import type { User } from '@/lib/types'
+import { fullNameSchema, phoneSchema } from '@/lib/validation'
 
-const profileSchema = z.object({
-  fullName: z.string().trim().min(1, 'Enter your full name').max(150, 'Use at most 150 characters'),
-  phone: z
-    .string()
-    .trim()
-    .max(30, 'Use at most 30 characters')
-    .regex(/^$|^\+?[0-9 ()-]{6,30}$/, 'Enter a valid phone number'),
-})
+const profileSchema = z.object({ fullName: fullNameSchema, phone: phoneSchema })
 type ProfileValues = z.infer<typeof profileSchema>
 
 export function ProfileForm({ user }: { user: User }) {
