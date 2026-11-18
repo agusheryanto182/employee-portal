@@ -52,3 +52,19 @@ export function initials(fullName: string): string {
     .map((part) => part[0]!.toUpperCase())
     .join('')
 }
+
+/**
+ * Turns the dates picked in a filter (`yyyy-mm-dd`, the user's local days) into the instants the
+ * API expects: `from` is the start of the first day (inclusive), `to` the start of the day after
+ * the last one (exclusive), so "to 18 Nov" includes all of 18 November.
+ */
+export function localDayRange(fromDay?: string, toDay?: string): { from?: string; to?: string } {
+  const startOf = (day: string, plusDays = 0) => {
+    const [year, month, date] = day.split('-').map(Number) as [number, number, number]
+    return new Date(year, month - 1, date + plusDays).toISOString()
+  }
+  return {
+    from: fromDay ? startOf(fromDay) : undefined,
+    to: toDay ? startOf(toDay, 1) : undefined,
+  }
+}

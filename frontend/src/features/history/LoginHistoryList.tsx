@@ -1,12 +1,20 @@
 import { CircleCheck, CircleX, Monitor } from 'lucide-react'
+import type { ReactNode } from 'react'
 import { Badge } from '@/components/ui/badge'
 import { describeFailure, describeUserAgent, formatDateTime } from '@/lib/format'
 import type { LoginHistoryEntry } from '@/lib/types'
 
+interface LoginHistoryListProps {
+  entries: LoginHistoryEntry[]
+  /** The backoffice shows whose account each attempt was for. */
+  renderAccount?: (entry: LoginHistoryEntry) => ReactNode
+  emptyMessage?: string
+}
+
 /** Login attempts as a list that works on a phone; failed attempts say why. */
-export function LoginHistoryList({ entries }: { entries: LoginHistoryEntry[] }) {
+export function LoginHistoryList({ entries, renderAccount, emptyMessage = 'No sign-in attempts yet.' }: LoginHistoryListProps) {
   if (entries.length === 0) {
-    return <p className="py-6 text-center text-sm text-muted-foreground">No sign-in attempts yet.</p>
+    return <p className="py-6 text-center text-sm text-muted-foreground">{emptyMessage}</p>
   }
   return (
     <ul className="divide-y">
@@ -22,6 +30,7 @@ export function LoginHistoryList({ entries }: { entries: LoginHistoryEntry[] }) 
               <span className="font-medium">{entry.success ? 'Signed in' : describeFailure(entry.failureReason)}</span>
               <Badge variant={entry.success ? 'secondary' : 'destructive'}>{entry.success ? 'Success' : 'Failed'}</Badge>
             </div>
+            {renderAccount ? <div className="mt-1 truncate text-sm">{renderAccount(entry)}</div> : null}
             <p className="mt-1 flex flex-wrap items-center gap-x-1.5 text-sm text-muted-foreground">
               <time dateTime={entry.createdAt}>{formatDateTime(entry.createdAt)}</time>
               <span aria-hidden>·</span>
