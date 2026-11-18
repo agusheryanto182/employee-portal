@@ -7,13 +7,13 @@ A mock employee **dashboard** and **backoffice**, each with its own sign-in page
 
 Installable as a PWA.
 
-> Status: Sprint 6 (PWA) done; end-to-end tests and deployment are next. See the [project plan](docs/project-plan.md) and the [issues](https://github.com/agusheryanto182/employee-portal/issues).
+> Status: Sprint 7: end-to-end tests done, deployment next. See the [project plan](docs/project-plan.md) and the [issues](https://github.com/agusheryanto182/employee-portal/issues).
 
 ## Stack
 
 - **Backend:** Java 25 (LTS), Spring Boot 4.1, Spring Security, Data JPA, Flyway, PostgreSQL
 - **Frontend:** React 19, Vite, TypeScript, TanStack Router and Query, Tailwind CSS, shadcn/ui, react-hook-form + zod
-- **Tests:** JUnit 5, Testcontainers, Vitest, Testing Library (Playwright later)
+- **Tests:** JUnit 5, Testcontainers, Vitest, Testing Library, Playwright
 - **CI:** GitHub Actions
 
 Why these choices: [docs/decisions](docs/decisions/).
@@ -51,6 +51,10 @@ npm run dev
 ```bash
 cd backend && ./mvnw verify   # unit + integration tests (needs Docker)
 cd frontend && npm test       # component tests
+
+# End-to-end: the whole stack in Docker, then Playwright
+docker compose --profile app up -d --build --wait   # app on http://localhost:3000
+cd e2e && npm install && npx playwright install chromium && npx playwright test
 ```
 
 ## Documentation

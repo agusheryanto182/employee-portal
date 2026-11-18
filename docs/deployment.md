@@ -43,6 +43,6 @@ Secrets are set in each provider's dashboard and are never committed.
 
 1. **Neon**: create a project and copy the connection string.
 2. **Brevo**: create an account, verify the sender email and generate an SMTP key.
-3. **Render**: new Web Service from the GitHub repo, root `backend/`, Docker runtime, set the environment variables above, health check `/actuator/health`.
+3. **Render**: new Web Service from the GitHub repo, root `backend/`, Docker runtime (`backend/Dockerfile`), set the environment variables above, health check `/actuator/health`. The image listens on `PORT` and sizes the JVM for a small container: heap at 75% of the memory limit, the serial collector, and exit on out-of-memory so Render restarts it.
 4. **Vercel**: import the repo, root `frontend/`, add a rewrite from `/api/:path*` to the Render URL in `vercel.json`. Serve `sw.js` and `manifest.webmanifest` with `Cache-Control: no-cache` so a new version reaches users right away ([ADR 0014](decisions/0014-pwa-offline-shell-no-api-cache.md)). The PWA needs HTTPS, which Vercel provides.
 5. Smoke test: sign in as the seeded admin at `/admin/login`, invite a real email address, activate, sign in at `/login`, check the history.

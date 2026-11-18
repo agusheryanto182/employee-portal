@@ -46,26 +46,31 @@ The service worker itself is checked by hand on a production build (`npm run bui
 
 ## End to end
 
-Playwright runs against the full Docker Compose stack. The invite link is read from the **Mailpit API**, so the test follows the real email path.
+Playwright (`e2e/`) runs against the full Docker Compose stack: PostgreSQL, Mailpit, the backend image and the frontend image (nginx proxying `/api` like the Vercel rewrite). The invite link is read from the **Mailpit API**, so the test follows the real email path. The journey runs twice, on desktop Chrome and on a Pixel 7 viewport, each with its own new employee.
 
-Main journey:
-1. Admin signs in at `/admin/login` and creates an employee
-2. The test reads the invite email from Mailpit and opens the link
-3. The employee sets a password and signs in at `/login`; signing in at `/admin/login` fails
-4. A failed login and a successful login both appear in the history
-5. The employee edits the profile and logs out
-6. After logout, a protected page redirects to `/login`; an employee opening `/admin` is redirected to `/`
+Main journey (`e2e/tests/main-journey.spec.ts`):
+1. Admin signs in at `/admin/login` and adds an employee
+2. The test reads the invite email from Mailpit and opens the link, sets a password, and checks that the link works only once
+3. Signing in at `/admin/login` fails for the employee, a wrong password fails at `/login`, then the employee signs in
+4. The history shows the successful sign-in and both failed attempts with their reasons; an employee opening `/admin` is redirected to `/`
+5. The employee edits the profile (still saved after a reload) and signs out; a protected page then redirects to `/login`
+6. The admin finds the employee, sees the failed attempts in their history, deactivates them, and the employee can no longer sign in
 
 ```bash
-docker compose up -d
-cd e2e && npx playwright test
+docker compose --profile app up -d --build --wait   # app on http://localhost:3000
+cd e2e
+npm install
+npx playwright install chromium                     # or set CHROMIUM_PATH to an installed Chromium
+npx playwright test
 ```
+
+`E2E_BASE_URL` and `MAILPIT_URL` point the tests at another stack.
 
 ## Continuous integration
 
 GitHub Actions runs on every pull request and on pushes to `master`:
 - Backend: `./mvnw verify` (GitHub-hosted runners include Docker for Testcontainers)
 - Frontend: lint, type check, tests, production build
-- E2E: added in Sprint 7
+- E2E: builds and starts the Docker Compose stack, then runs Playwright; the report and backend logs are kept when it fails
 
 A pull request is merged only when CI is green.
