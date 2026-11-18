@@ -20,6 +20,10 @@ import { Route as AdminBackofficeRouteImport } from './routes/admin/_backoffice'
 import { Route as AdminLoginRouteImport } from './routes/admin/login'
 import { Route as AdminBackofficeIndexRouteImport } from './routes/admin/_backoffice/index'
 import { Route as AdminBackofficeAccountRouteImport } from './routes/admin/_backoffice/account'
+import { Route as AdminBackofficeLoginHistoryRouteImport } from './routes/admin/_backoffice/login-history'
+import { Route as AdminBackofficeUsersIndexRouteImport } from './routes/admin/_backoffice/users/index'
+import { Route as AdminBackofficeUsersUserIdRouteImport } from './routes/admin/_backoffice/users/$userId'
+import { Route as AdminBackofficeUsersNewRouteImport } from './routes/admin/_backoffice/users/new'
 
 const EmployeeRoute = EmployeeRouteImport.update({
   id: '/_employee',
@@ -75,6 +79,29 @@ const AdminBackofficeAccountRoute = AdminBackofficeAccountRouteImport.update({
   path: '/account',
   getParentRoute: () => AdminBackofficeRoute,
 } as any)
+const AdminBackofficeLoginHistoryRoute =
+  AdminBackofficeLoginHistoryRouteImport.update({
+    id: '/login-history',
+    path: '/login-history',
+    getParentRoute: () => AdminBackofficeRoute,
+  } as any)
+const AdminBackofficeUsersIndexRoute =
+  AdminBackofficeUsersIndexRouteImport.update({
+    id: '/users/',
+    path: '/users/',
+    getParentRoute: () => AdminBackofficeRoute,
+  } as any)
+const AdminBackofficeUsersUserIdRoute =
+  AdminBackofficeUsersUserIdRouteImport.update({
+    id: '/users/$userId',
+    path: '/users/$userId',
+    getParentRoute: () => AdminBackofficeRoute,
+  } as any)
+const AdminBackofficeUsersNewRoute = AdminBackofficeUsersNewRouteImport.update({
+  id: '/users/new',
+  path: '/users/new',
+  getParentRoute: () => AdminBackofficeRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof EmployeeIndexRoute
@@ -86,7 +113,11 @@ export interface FileRoutesByFullPath {
   '/admin': typeof AdminBackofficeRouteWithChildren
   '/admin/login': typeof AdminLoginRoute
   '/admin/account': typeof AdminBackofficeAccountRoute
+  '/admin/login-history': typeof AdminBackofficeLoginHistoryRoute
   '/admin/': typeof AdminBackofficeIndexRoute
+  '/admin/users/$userId': typeof AdminBackofficeUsersUserIdRoute
+  '/admin/users/new': typeof AdminBackofficeUsersNewRoute
+  '/admin/users/': typeof AdminBackofficeUsersIndexRoute
 }
 export interface FileRoutesByTo {
   '/activate': typeof ActivateRoute
@@ -97,7 +128,11 @@ export interface FileRoutesByTo {
   '/admin/login': typeof AdminLoginRoute
   '/': typeof EmployeeIndexRoute
   '/admin/account': typeof AdminBackofficeAccountRoute
+  '/admin/login-history': typeof AdminBackofficeLoginHistoryRoute
   '/admin': typeof AdminBackofficeIndexRoute
+  '/admin/users/$userId': typeof AdminBackofficeUsersUserIdRoute
+  '/admin/users/new': typeof AdminBackofficeUsersNewRoute
+  '/admin/users': typeof AdminBackofficeUsersIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -111,7 +146,11 @@ export interface FileRoutesById {
   '/admin/login': typeof AdminLoginRoute
   '/_employee/': typeof EmployeeIndexRoute
   '/admin/_backoffice/account': typeof AdminBackofficeAccountRoute
+  '/admin/_backoffice/login-history': typeof AdminBackofficeLoginHistoryRoute
   '/admin/_backoffice/': typeof AdminBackofficeIndexRoute
+  '/admin/_backoffice/users/$userId': typeof AdminBackofficeUsersUserIdRoute
+  '/admin/_backoffice/users/new': typeof AdminBackofficeUsersNewRoute
+  '/admin/_backoffice/users/': typeof AdminBackofficeUsersIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -125,7 +164,11 @@ export interface FileRouteTypes {
     | '/admin'
     | '/admin/login'
     | '/admin/account'
+    | '/admin/login-history'
     | '/admin/'
+    | '/admin/users/$userId'
+    | '/admin/users/new'
+    | '/admin/users/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/activate'
@@ -136,7 +179,11 @@ export interface FileRouteTypes {
     | '/admin/login'
     | '/'
     | '/admin/account'
+    | '/admin/login-history'
     | '/admin'
+    | '/admin/users/$userId'
+    | '/admin/users/new'
+    | '/admin/users'
   id:
     | '__root__'
     | '/_employee'
@@ -149,7 +196,11 @@ export interface FileRouteTypes {
     | '/admin/login'
     | '/_employee/'
     | '/admin/_backoffice/account'
+    | '/admin/_backoffice/login-history'
     | '/admin/_backoffice/'
+    | '/admin/_backoffice/users/$userId'
+    | '/admin/_backoffice/users/new'
+    | '/admin/_backoffice/users/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -240,6 +291,34 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminBackofficeAccountRouteImport
       parentRoute: typeof AdminBackofficeRoute
     }
+    '/admin/_backoffice/login-history': {
+      id: '/admin/_backoffice/login-history'
+      path: '/login-history'
+      fullPath: '/admin/login-history'
+      preLoaderRoute: typeof AdminBackofficeLoginHistoryRouteImport
+      parentRoute: typeof AdminBackofficeRoute
+    }
+    '/admin/_backoffice/users/': {
+      id: '/admin/_backoffice/users/'
+      path: '/users'
+      fullPath: '/admin/users/'
+      preLoaderRoute: typeof AdminBackofficeUsersIndexRouteImport
+      parentRoute: typeof AdminBackofficeRoute
+    }
+    '/admin/_backoffice/users/$userId': {
+      id: '/admin/_backoffice/users/$userId'
+      path: '/users/$userId'
+      fullPath: '/admin/users/$userId'
+      preLoaderRoute: typeof AdminBackofficeUsersUserIdRouteImport
+      parentRoute: typeof AdminBackofficeRoute
+    }
+    '/admin/_backoffice/users/new': {
+      id: '/admin/_backoffice/users/new'
+      path: '/users/new'
+      fullPath: '/admin/users/new'
+      preLoaderRoute: typeof AdminBackofficeUsersNewRouteImport
+      parentRoute: typeof AdminBackofficeRoute
+    }
   }
 }
 
@@ -261,12 +340,20 @@ const EmployeeRouteWithChildren = EmployeeRoute._addFileChildren(
 
 interface AdminBackofficeRouteChildren {
   AdminBackofficeAccountRoute: typeof AdminBackofficeAccountRoute
+  AdminBackofficeLoginHistoryRoute: typeof AdminBackofficeLoginHistoryRoute
   AdminBackofficeIndexRoute: typeof AdminBackofficeIndexRoute
+  AdminBackofficeUsersUserIdRoute: typeof AdminBackofficeUsersUserIdRoute
+  AdminBackofficeUsersNewRoute: typeof AdminBackofficeUsersNewRoute
+  AdminBackofficeUsersIndexRoute: typeof AdminBackofficeUsersIndexRoute
 }
 
 const AdminBackofficeRouteChildren: AdminBackofficeRouteChildren = {
   AdminBackofficeAccountRoute: AdminBackofficeAccountRoute,
+  AdminBackofficeLoginHistoryRoute: AdminBackofficeLoginHistoryRoute,
   AdminBackofficeIndexRoute: AdminBackofficeIndexRoute,
+  AdminBackofficeUsersUserIdRoute: AdminBackofficeUsersUserIdRoute,
+  AdminBackofficeUsersNewRoute: AdminBackofficeUsersNewRoute,
+  AdminBackofficeUsersIndexRoute: AdminBackofficeUsersIndexRoute,
 }
 
 const AdminBackofficeRouteWithChildren = AdminBackofficeRoute._addFileChildren(
