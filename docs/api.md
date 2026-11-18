@@ -20,8 +20,10 @@ Base path: `/api`. JSON in and out. Interactive documentation is served by Swagg
 | POST | `/api/auth/refresh` | Rotates the refresh cookie and returns `{ accessToken, user }`. Shared by both roles. |
 | POST | `/api/auth/logout` | Revokes the refresh token and clears the cookie. Shared by both roles. |
 | GET | `/api/auth/tokens/{token}` | Checks an invite or reset link before showing the form → `{ type, email, fullName }` |
-| POST | `/api/auth/activate` | `{ token, password }` sets the first password and activates the account |
-| POST | `/api/auth/reset-password` | `{ token, password }` sets a new password and revokes all sessions |
+| POST | `/api/auth/activate` | `{ token, password }` sets the first password and activates the account → 204 |
+| POST | `/api/auth/reset-password` | `{ token, password }` sets a new password and revokes all sessions → 204 |
+
+Passwords must be 8 to 72 characters (bcrypt ignores anything after 72 bytes). An unknown, expired, used or replaced link, or one used for the wrong purpose, always gets the same 400 "This link is invalid or has expired".
 
 ### Self-service (any signed-in user, both roles)
 
@@ -39,13 +41,13 @@ Employees use these from the dashboard, admins from **My account** in the backof
 | Method | Path | Description |
 |---|---|---|
 | GET | `/api/admin/users?search=&status=&role=&page=&size=` | List users, newest first. `search` matches part of the email or full name, case-insensitive. |
-| POST | `/api/admin/users` | `{ email, fullName, phone?, role }` creates a `PENDING` user (201 with `Location`) and sends an invite |
+| POST | `/api/admin/users` | `{ email, fullName, phone?, role }` creates a `PENDING` user (201 with `Location`) and emails an invite link |
 | GET | `/api/admin/users/{id}` | User detail |
-| PATCH | `/api/admin/users/{id}` | Any of `{ email, fullName, phone, role }`. Omitted or `null` fields are unchanged; `"phone": ""` removes the phone. Changing the role revokes the user's sessions. |
-| POST | `/api/admin/users/{id}/deactivate` | Sets `INACTIVE` and revokes all sessions. Works for `ACTIVE` and `PENDING` users. |
+| PATCH | `/api/admin/users/{id}` | Any of `{ email, fullName, phone, role }`. Omitted or `null` fields are unchanged; `"phone": ""` removes the phone. Changing the role revokes the user's sessions. Changing the email cancels links sent to the old address, and a `PENDING` user gets a new invite at the new one. |
+| POST | `/api/admin/users/{id}/deactivate` | Sets `INACTIVE`, revokes all sessions and cancels unused links. Works for `ACTIVE` and `PENDING` users. |
 | POST | `/api/admin/users/{id}/activate` | Reactivates an `INACTIVE` user: `ACTIVE`, or back to `PENDING` if they never set a password |
-| POST | `/api/admin/users/{id}/resend-invite` | New invite for a `PENDING` user → `{ link }` |
-| POST | `/api/admin/users/{id}/reset-password` | Sends a reset email → `{ link }` |
+| POST | `/api/admin/users/{id}/resend-invite` | Emails a new invite to a `PENDING` user (older links stop working) → `{ link }`. 409 for other statuses. |
+| POST | `/api/admin/users/{id}/reset-password` | Emails a reset link to an `ACTIVE` user → `{ link }`. 409 for other statuses. |
 | GET | `/api/admin/login-history?userId=&success=&from=&to=&page=&size=` | All login attempts, newest first. `from` (inclusive) and `to` (exclusive) are ISO-8601 instants such as `2026-11-18T00:00:00Z`. |
 
 User responses look like `{ id, email, fullName, phone, role, status, createdAt, updatedAt }`. Login history entries look like `{ id, userId, email, success, failureReason, ipAddress, userAgent, createdAt }`, where `userId` is `null` for an email that matches no account.
@@ -82,5 +84,5 @@ Every error uses the RFC 9457 Problem Details format:
 | 401 | Not signed in, token expired, or wrong credentials (the message is always "Invalid email or password") |
 | 403 | Signed in but not allowed (for example an employee calling `/api/admin/**`) |
 | 404 | Resource not found |
-| 409 | Conflict: an email that is already registered, or an admin deactivating themselves or changing their own role |
+| 409 | Conflict: an email that is already registered, an admin deactivating themselves or changing their own role, or an invite or reset for a user in the wrong status |
 | 429 | Too many failed logins: 5 failures per IP + email within 15 minutes. The response has a `Retry-After` header (seconds). |
