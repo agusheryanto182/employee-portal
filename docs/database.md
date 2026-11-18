@@ -55,7 +55,7 @@ erDiagram
 ### `users`
 Every account, admin or employee. `role` decides the area: `ADMIN` uses only the backoffice, `EMPLOYEE` only the dashboard ([ADR 0012](decisions/0012-separate-admin-and-employee-areas.md)).
 - `email` is unique and normalised to lowercase so `Budi@x.com` and `budi@x.com` are the same account.
-- `password_hash` (bcrypt) is `NULL` while the user is `PENDING`, because employees set their own password through the invite link.
+- `password_hash` (bcrypt) is `NULL` until the user sets a password through the invite link. Only `ACTIVE` users must have one (`CHECK (status <> 'ACTIVE' OR password_hash IS NOT NULL)`), so an invited user who never activated can still be deactivated.
 - Users are never deleted, only set to `INACTIVE` ([ADR 0006](decisions/0006-no-hard-delete.md)).
 
 **Status lifecycle**
@@ -65,9 +65,12 @@ stateDiagram-v2
     [*] --> PENDING: admin creates user (invite sent)
     PENDING --> ACTIVE: employee sets password via invite link
     ACTIVE --> INACTIVE: admin deactivates
-    INACTIVE --> ACTIVE: admin reactivates
+    INACTIVE --> ACTIVE: admin reactivates (has a password)
     PENDING --> INACTIVE: admin deactivates
+    INACTIVE --> PENDING: admin reactivates (never set a password)
 ```
+
+Deactivating a user, or changing their role, revokes all of their refresh tokens. An admin cannot deactivate their own account or change their own role, so there is always at least one active admin.
 
 ### `login_history`
 One row per login attempt, successful or not ([ADR 0005](decisions/0005-login-history-includes-failures.md)).
