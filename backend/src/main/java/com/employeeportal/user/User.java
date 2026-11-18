@@ -93,4 +93,13 @@ public class User {
     public boolean isActive() {
         return status == UserStatus.ACTIVE;
     }
+
+    public void deactivate() {
+        status = UserStatus.INACTIVE;
+    }
+
+    /** An account that never set a password goes back to waiting for its invite. */
+    public void reactivate() {
+        status = passwordHash == null ? UserStatus.PENDING : UserStatus.ACTIVE;
+    }
 }

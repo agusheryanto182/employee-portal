@@ -3,6 +3,7 @@ package com.employeeportal.common;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
@@ -29,6 +30,13 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
         return ResponseEntity.status(ex.getStatus())
                 .headers(ex.getHeaders())
                 .body(ProblemDetail.forStatusAndDetail(ex.getStatus(), ex.getMessage()));
+    }
+
+    /** A unique constraint lost a race with another request (for example two admins adding the same email). */
+    @ExceptionHandler(DataIntegrityViolationException.class)
+    ResponseEntity<ProblemDetail> handleDataIntegrity(DataIntegrityViolationException ex) {
+        return ResponseEntity.status(HttpStatus.CONFLICT)
+                .body(ProblemDetail.forStatusAndDetail(HttpStatus.CONFLICT, "The request conflicts with existing data"));
     }
 
     @ExceptionHandler(AuthenticationException.class)
