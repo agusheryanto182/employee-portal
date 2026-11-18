@@ -1,0 +1,9 @@
+app:
+  jwt:
+    secret: test-secret-0123456789-0123456789-0123456789
+  refresh-token:
+    cookie-secure: true
+  admin:
+    email: Admin@Test.example
+    password: Admin12345!
+    full-name: Test Admin

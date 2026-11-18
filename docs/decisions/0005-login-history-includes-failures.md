@@ -22,3 +22,4 @@ Record **every** login attempt in `login_history`: timestamp, success flag, fail
 - The table grows with every attempt, including attacks. Rate limiting keeps it bounded, and a retention policy could be added later.
 - Attempts with an unknown email have no `user_id`; they are visible to admins only.
 - IP addresses are personal data, so the history is only shown to the account owner and admins.
+- The IP is taken from `X-Forwarded-For` because the API runs behind Vercel and Render. Spring trusts that header (`server.forward-headers-strategy=framework`), so a client calling the API directly could put a fake IP in its own history rows. Restricting trusted proxies would fix this; it is accepted for this project because the history is informational, not used for access control.

@@ -1,0 +1,10 @@
+# Local development defaults, activated by ./mvnw spring-boot:run. Never used in production.
+app:
+  jwt:
+    secret: local-development-secret-change-me-0123456789
+  refresh-token:
+    cookie-secure: false # http://localhost has no TLS
+  admin:
+    email: admin@example.com
+    password: Admin12345!
+    full-name: Local Admin
