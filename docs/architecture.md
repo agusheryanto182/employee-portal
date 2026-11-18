@@ -57,8 +57,8 @@ employee-portal/
 ├─ backend/                 Spring Boot API
 │  └─ src/main/java/.../
 │     ├─ auth/              login, refresh, logout, JWT, account tokens
-│     ├─ user/              user entity, admin user management, self-service profile
-│     ├─ loginhistory/      recording and querying login attempts
+│     ├─ user/              user entity, backoffice user management, self-service profile
+│     ├─ loginhistory/      recording and querying login attempts (incl. backoffice view)
 │     ├─ mail/              email sending and templates
 │     ├─ common/            errors, pagination, utilities
 │     └─ config/            security, CORS, OpenAPI, async, admin seed
@@ -74,7 +74,7 @@ employee-portal/
 └─ .github/workflows/       CI
 ```
 
-The backend is organised **by feature** rather than by layer: everything about login history lives in one package, which keeps related code together and makes features easy to find.
+The backend is organised **by feature** rather than by layer: everything about login history lives in one package, which keeps related code together and makes features easy to find. Inside a feature, controllers handle HTTP, services hold the rules and transactions, and repositories access the database; entities never leave the service layer ([ADR 0013](decisions/0013-backend-package-structure.md)).
 
 ## Key design points
 
