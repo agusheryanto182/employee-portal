@@ -1,0 +1,32 @@
+# Used by the Docker image (docker compose --profile app). ${API_UPSTREAM} is filled in at start-up.
+server {
+    listen 80;
+    root /usr/share/nginx/html;
+
+    # Same-origin API, so the refresh cookie is first-party (ADR 0007).
+    location /api/ {
+        proxy_pass ${API_UPSTREAM};
+        proxy_set_header Host $host;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+
+    # The service worker and manifest must be revalidated so new versions reach users (ADR 0014).
+    location = /sw.js {
+        add_header Cache-Control "no-cache";
+    }
+    location = /manifest.webmanifest {
+        add_header Cache-Control "no-cache";
+    }
+
+    # Hashed build files never change.
+    location /assets/ {
+        add_header Cache-Control "public, max-age=31536000, immutable";
+    }
+
+    # Every other path is a client-side route.
+    location / {
+        add_header Cache-Control "no-cache";
+        try_files $uri /index.html;
+    }
+}
