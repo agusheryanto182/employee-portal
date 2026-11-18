@@ -7,7 +7,7 @@ A mock employee **dashboard** and **backoffice**, each with its own sign-in page
 
 Installable as a PWA.
 
-> Status: Sprint 5 (backoffice UI) done; PWA, end-to-end tests and deployment are next. See the [project plan](docs/project-plan.md) and the [issues](https://github.com/agusheryanto182/employee-portal/issues).
+> Status: Sprint 6 (PWA) done; end-to-end tests and deployment are next. See the [project plan](docs/project-plan.md) and the [issues](https://github.com/agusheryanto182/employee-portal/issues).
 
 ## Stack
 

@@ -31,5 +31,6 @@ It is written before the code and updated whenever a decision changes.
 | [0011](decisions/0011-vite-spa-tanstack-router.md) | Vite SPA with TanStack Router instead of Next.js | Accepted |
 | [0012](decisions/0012-separate-admin-and-employee-areas.md) | Admins and employees each have their own area | Accepted |
 | [0013](decisions/0013-backend-package-structure.md) | Backend packages by feature, layered inside | Accepted |
+| [0014](decisions/0014-pwa-offline-shell-no-api-cache.md) | PWA: cache the app shell, never the API | Accepted |
 
 New ADRs copy [decisions/template.md](decisions/template.md).
