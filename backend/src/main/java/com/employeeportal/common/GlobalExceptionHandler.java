@@ -32,6 +32,13 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
                 .body(ProblemDetail.forStatusAndDetail(ex.getStatus(), ex.getMessage()));
     }
 
+    @ExceptionHandler(FieldErrorException.class)
+    ResponseEntity<ProblemDetail> handleFieldError(FieldErrorException ex) {
+        ProblemDetail body = ProblemDetail.forStatusAndDetail(ex.getStatus(), ex.getMessage());
+        body.setProperty("errors", ex.getErrors());
+        return ResponseEntity.status(ex.getStatus()).body(body);
+    }
+
     /** A unique constraint lost a race with another request (for example two admins adding the same email). */
     @ExceptionHandler(DataIntegrityViolationException.class)
     ResponseEntity<ProblemDetail> handleDataIntegrity(DataIntegrityViolationException ex) {

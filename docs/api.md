@@ -27,14 +27,18 @@ Passwords must be 8 to 72 characters (bcrypt ignores anything after 72 bytes). A
 
 ### Self-service (any signed-in user, both roles)
 
-Employees use these from the dashboard, admins from **My account** in the backoffice.
+Employees use these from the dashboard, admins from **My account** in the backoffice. They also check that the account is still `ACTIVE`, so a deactivated user's remaining access token (up to 15 minutes) gets 401 here.
 
 | Method | Path | Description |
 |---|---|---|
 | GET | `/api/me` | Current user's profile |
-| PATCH | `/api/me` | `{ fullName, phone }`. The email cannot be changed here. |
-| PUT | `/api/me/password` | `{ currentPassword, newPassword }`. Revokes other sessions. |
-| GET | `/api/me/login-history?page=&size=` | Own login attempts, newest first |
+| PATCH | `/api/me` | Any of `{ fullName, phone }`. Omitted or `null` fields are unchanged; `"phone": ""` removes the phone. Other fields such as `email` or `role` are ignored: only an admin can change them. |
+| PUT | `/api/me/password` | `{ currentPassword, newPassword }`. Signs out every device, then returns a new session for this one (same body as login, plus a new refresh cookie). Also cancels any unused reset link. |
+| GET | `/api/me/login-history?page=&size=` | Own login attempts (successful and failed, with IP and user agent), newest first |
+
+A wrong current password, or a new password equal to the current one, returns 400 with the field in `errors` (for example `{ "currentPassword": "is incorrect" }`), not 401, so the client does not mistake it for an expired session.
+
+The password change signs out all sessions and issues a new one instead of keeping "the current session", because the refresh cookie is scoped to `/api/auth` and is not sent to `/api/me/password`.
 
 ### Backoffice (`ADMIN` only)
 
