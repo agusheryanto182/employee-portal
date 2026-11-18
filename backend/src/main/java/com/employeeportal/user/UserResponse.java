@@ -1,5 +1,6 @@
 package com.employeeportal.user;
 
+import java.time.Instant;
 import java.util.UUID;
 
 public record UserResponse(
@@ -8,7 +9,9 @@ public record UserResponse(
         String fullName,
         String phone,
         Role role,
-        UserStatus status) {
+        UserStatus status,
+        Instant createdAt,
+        Instant updatedAt) {
 
     public static UserResponse from(User user) {
         return new UserResponse(
@@ -17,6 +20,8 @@ public record UserResponse(
                 user.getFullName(),
                 user.getPhone(),
                 user.getRole(),
-                user.getStatus());
+                user.getStatus(),
+                user.getCreatedAt(),
+                user.getUpdatedAt());
     }
 }

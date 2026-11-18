@@ -2,17 +2,19 @@ package com.employeeportal.loginhistory;
 
 import java.util.UUID;
 
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.employeeportal.common.ClientInfo;
+import com.employeeportal.common.PageResponse;
 import com.employeeportal.user.User;
 
 import lombok.RequiredArgsConstructor;
 
 /**
- * Records login attempts. Each record is written in its own transaction (REQUIRES_NEW) so a
+ * Records and queries login attempts. Each record is written in its own transaction (REQUIRES_NEW) so a
  * failed login, which ends in an exception, still leaves its history row behind.
  */
 @Service
@@ -34,5 +36,10 @@ public class LoginHistoryService {
     public void recordFailure(User user, String email, LoginFailureReason reason, ClientInfo client) {
         UUID userId = user == null ? null : user.getId();
         repository.save(LoginHistory.failure(userId, email, reason, client));
+    }
+
+    @Transactional(readOnly = true)
+    public PageResponse<LoginHistoryResponse> search(LoginHistoryFilter filter, Pageable pageable) {
+        return PageResponse.from(repository.findAll(filter.toSpecification(), pageable), LoginHistoryResponse::from);
     }
 }

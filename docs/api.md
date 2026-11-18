@@ -38,21 +38,25 @@ Employees use these from the dashboard, admins from **My account** in the backof
 
 | Method | Path | Description |
 |---|---|---|
-| GET | `/api/admin/users?search=&status=&page=&size=` | List and search users |
-| POST | `/api/admin/users` | `{ email, fullName, phone, role }` creates a `PENDING` user and sends an invite |
+| GET | `/api/admin/users?search=&status=&role=&page=&size=` | List users, newest first. `search` matches part of the email or full name, case-insensitive. |
+| POST | `/api/admin/users` | `{ email, fullName, phone?, role }` creates a `PENDING` user (201 with `Location`) and sends an invite |
 | GET | `/api/admin/users/{id}` | User detail |
-| PATCH | `/api/admin/users/{id}` | Edit `email`, `fullName`, `phone`, `role` |
-| POST | `/api/admin/users/{id}/deactivate` | Sets `INACTIVE` and revokes all sessions |
-| POST | `/api/admin/users/{id}/activate` | Reactivates an `INACTIVE` user |
+| PATCH | `/api/admin/users/{id}` | Any of `{ email, fullName, phone, role }`. Omitted or `null` fields are unchanged; `"phone": ""` removes the phone. Changing the role revokes the user's sessions. |
+| POST | `/api/admin/users/{id}/deactivate` | Sets `INACTIVE` and revokes all sessions. Works for `ACTIVE` and `PENDING` users. |
+| POST | `/api/admin/users/{id}/activate` | Reactivates an `INACTIVE` user: `ACTIVE`, or back to `PENDING` if they never set a password |
 | POST | `/api/admin/users/{id}/resend-invite` | New invite for a `PENDING` user → `{ link }` |
 | POST | `/api/admin/users/{id}/reset-password` | Sends a reset email → `{ link }` |
-| GET | `/api/admin/login-history?userId=&success=&from=&to=&page=&size=` | All login attempts with filters |
+| GET | `/api/admin/login-history?userId=&success=&from=&to=&page=&size=` | All login attempts, newest first. `from` (inclusive) and `to` (exclusive) are ISO-8601 instants such as `2026-11-18T00:00:00Z`. |
+
+User responses look like `{ id, email, fullName, phone, role, status, createdAt, updatedAt }`. Login history entries look like `{ id, userId, email, success, failureReason, ipAddress, userAgent, createdAt }`, where `userId` is `null` for an email that matches no account.
+
+An admin cannot deactivate their own account or change their own role (409). This keeps at least one active admin. Deactivating an already inactive user, or activating a user who is not `INACTIVE`, changes nothing and returns the user.
 
 The `{ link }` returned by the resend and reset endpoints lets the admin copy the link and share it another way if the email does not arrive ([ADR 0004](decisions/0004-invite-link-onboarding.md)).
 
 ## Pagination
 
-List endpoints accept `page` (0-based) and `size` (default 20, max 100) and return:
+List endpoints accept `page` (0-based) and `size` (default 20, 1 to 100; other values return 400) and return:
 
 ```json
 { "content": [], "page": 0, "size": 20, "totalElements": 0, "totalPages": 0 }
@@ -78,5 +82,5 @@ Every error uses the RFC 9457 Problem Details format:
 | 401 | Not signed in, token expired, or wrong credentials (the message is always "Invalid email or password") |
 | 403 | Signed in but not allowed (for example an employee calling `/api/admin/**`) |
 | 404 | Resource not found |
-| 409 | Conflict, for example an email that is already registered |
+| 409 | Conflict: an email that is already registered, or an admin deactivating themselves or changing their own role |
 | 429 | Too many failed logins: 5 failures per IP + email within 15 minutes. The response has a `Retry-After` header (seconds). |

@@ -21,6 +21,6 @@ import com.employeeportal.TestcontainersConfiguration;
 @SpringBootTest
 @AutoConfigureMockMvc
 @ActiveProfiles("test")
-@Import(TestcontainersConfiguration.class)
+@Import({TestcontainersConfiguration.class, TestAccounts.class})
 public @interface IntegrationTest {
 }
