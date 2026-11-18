@@ -1,5 +1,6 @@
 import { redirect } from '@tanstack/react-router'
 import { homeFor, restoreSession, signInPathFor, type Portal } from './auth'
+import { isOffline, OfflineError } from './online'
 import type { User } from './types'
 
 const ROLE_OF: Record<Portal, User['role']> = { employee: 'EMPLOYEE', admin: 'ADMIN' }
@@ -11,6 +12,9 @@ const ROLE_OF: Record<Portal, User['role']> = { employee: 'EMPLOYEE', admin: 'AD
  */
 export async function requireArea(portal: Portal, href: string): Promise<{ user: User }> {
   const current = await restoreSession()
+  if (!current && isOffline()) {
+    throw new OfflineError() // we do not know whether they are signed in, so do not send them to sign in
+  }
   if (!current) {
     throw redirect({ to: signInPathFor(portal), search: { redirect: href } })
   }
