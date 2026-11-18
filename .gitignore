@@ -13,3 +13,7 @@ Thumbs.db
 
 # Logs
 *.log
+
+# Personal learning notes (local only)
+docs/backend-walkthrough.md
+docs/spring-boot-concepts.md
